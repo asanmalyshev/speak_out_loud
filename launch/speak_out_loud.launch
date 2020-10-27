@@ -1,0 +1,21 @@
+<launch>
+    <arg name="output" default="screen"/>
+    <!-- language possible values: ru/en -->
+    <arg name="language" default="ru"/> 
+
+    <arg name="whitelist" default="[]"/>
+    <arg name="blacklist" default="[]"/>
+    <arg name="debug" default="False"/>
+    <!-- <arg name="whitelist" default="[/speak_out_loud_client]"/> -->
+    <!-- <arg name="blacklist" default="[/speak_out_loud_client]"/> -->
+
+    <node name="speak_out_loud_srv" pkg="speak_out_loud" type="speak_out_loud_srv" output="$(arg output)">
+      <param name="language" value="$(arg language)"/>
+    </node>
+
+    <node name="speak_out_loud_hub_node" pkg="speak_out_loud" type="speak_out_loud_hub_node.py" output="$(arg output)">
+      <rosparam param="whitelist" subst_value="True">$(arg whitelist)</rosparam>
+      <rosparam param="blacklist" subst_value="True">$(arg blacklist)</rosparam>
+      <param name="debug" value="$(arg debug)"/>
+    </node>
+</launch>

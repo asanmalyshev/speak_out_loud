@@ -1,0 +1,9 @@
+<launch>
+    <arg name="output" default="screen"/>
+    <arg name="node_name" default="speak_out_loud_client"/>
+    <arg name="debug" default="False"/>
+
+    <node name="$(arg node_name)" pkg="speak_out_loud" type="speak_out_loud_client_example_node.py" output="$(arg output)">
+      <param name="debug" value="$(arg debug)"/>
+    </node>
+</launch>

@@ -1,0 +1,10 @@
+# goal
+string  sender_node   # sender node name 
+string  text          # text to read
+uint8    priority     # priority of text
+---
+# result
+uint8 success         # result of reading text (not used in current version) 
+---
+# feedback
+string message        # feedback of operation (not used in current version)
