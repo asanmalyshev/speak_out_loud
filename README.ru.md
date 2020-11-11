@@ -6,7 +6,7 @@
 
 <!-- <add logo> -->
 
-<!-- <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPLv2.1-green.svg" alt="License" /></a> -->
+<a href="LICENSE"><img src="https://img.shields.io/badge/License-GPLv2-green.svg" alt="License" /></a>
 <a><img src="https://img.shields.io/badge/ROS-Melodic-blue" alt="ros_version_melodic" /></a>
 <a><img src="https://img.shields.io/badge/ROS-Noetic-blue" alt="ros_version_noetic" /></a>
 </p>
@@ -277,3 +277,16 @@ Whitelist имеет приоритет выше. Это значит, что е
 ## Тестирование
 
 Раздел *[тестирования](TESTS.md)* вынесен в отдельный файл 
+
+
+## Лицензия
+
+Пакет распространяется под лицензией GPLv2 or later.
+
+RHVoice использует [LGPLv2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html). 
+При компиляции используется MAGE, разработанная под [GPLv3](https://www.gnu.org/licenses/gpl-3.0.html). 
+Для сохранения пакета и его ответвлений под GPLv2 необходимо перекомпилировать пакет без MAGE. 
+Подробности в разделе о лицензии пакета.
+
+Speech dispatcher содержит модули, приложения, бибилиотеки, разрабатывавшиеся под [LGPLv2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html), [GPLv2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html) и GPLv2-or-later. 
+Подробности в разделе о лицензии пакета.

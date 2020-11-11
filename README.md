@@ -6,7 +6,7 @@
 
 <!-- <add logo> -->
 
-<!-- <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPLv2.1-green.svg" alt="License" /></a> -->
+<a href="LICENSE"><img src="https://img.shields.io/badge/License-GPLv2-green.svg" alt="License" /></a>
 <a><img src="https://img.shields.io/badge/ROS-Melodic-blue" alt="ros_version_melodic" /></a>
 <a><img src="https://img.shields.io/badge/ROS-Noetic-blue" alt="ros_version_noetic" /></a>
 </p>
@@ -272,3 +272,16 @@ In testing section functionality of that type is shown on basic level, more adva
 ## Testing packages
 
 Testing scenarios are stored in separate file *[TESTS.md](TESTS.md)*
+
+
+## License
+
+Package is distributed under GPLv2 or later licence.
+
+RHVoice uses [LGPLv2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html). 
+But for compilation it uses MAGE which is under [GPLv3](https://www.gnu.org/licenses/gpl-3.0.html). 
+For working under GPLv2 recompile library without MAGE.
+See more information in licensing section on package site.
+
+Speech dispatcher contains modules, applications, libraries which is under [LGPLv2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html), [GPLv2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html) or GPLv2-or-later.
+See more information in licensing section on package site.
