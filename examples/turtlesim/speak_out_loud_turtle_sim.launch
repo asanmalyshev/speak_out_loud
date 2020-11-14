@@ -1,0 +1,7 @@
+<launch>
+    <arg name="output" default="screen"/>
+    <node name="turtlesim" pkg="turtlesim" type="turtlesim_node" output="$(arg output)"/>
+    <node name="turtlesim_teleop" pkg="turtlesim" type="turtle_teleop_key" output="$(arg output)"/>
+    <node name="turtleSay" pkg="speak_out_loud" type="speak_out_loud_turtle_sim.py" output="$(arg output)"/>
+    <include file="$(find speak_out_loud)/launch/speak_out_loud.launch"/>
+</launch>

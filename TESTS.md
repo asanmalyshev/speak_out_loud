@@ -5,6 +5,13 @@
 
 *[TESTING scenarios](TESTS.md)*
 
+## Tests
+[1.Rough console test](#testing-priorites-in-multi-client-regime)
+
+[2.Turtle sim](#turtle-sim-test)
+
+<!-- [3.Turtlebot3](#turtlebot3-test) -->
+
 ## Testing priorites in multi-client regime
 For testing open four terminal session.
 In first one (TS1) start main launch file, on TS2, TS3 launch client emulator.
@@ -289,3 +296,27 @@ Text to say: 2
 Priority [1-5]: 
 ```
 >___Result:___ both texts are read
+
+## Turtle sim test
+This test requires [turtlesim package](http://wiki.ros.org/turtlesim).
+
+To start demo just run launch file and move turtle with arrow keys.
+```shell
+roslaunch speak_out_loud speak_out_loud_turtle_sim.launch
+```
+Launch file runs:
+* both turtlesim_node and turtle_teleop_key nodes; 
+* node to convert velocities from cmd_vel into texts; 
+* speak_out_loud package.
+
+Produced audio contains both russian and english words to demonstrate languages mixturing.
+
+Speaking phrases:
+* arrow up - 'move прямо'
+* arrow down - 'move back'
+* arrow left - 'Поворачиваю налево'
+* arrow right - 'Поворачиваю right'
+
+<!-- ## Turtlebot3 test -->
+<!-- This test requires [turtlebot3](https://emanual.robotis.com). -->
+<!-- Try [this](https://automaticaddison.com/how-to-launch-the-turtlebot3-simulation-with-ros/) installation instruction. -->
