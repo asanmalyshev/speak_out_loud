@@ -4,12 +4,9 @@
   <version>0.0.0</version>
   <description>The speak_out_loud package</description>
 
-  <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <maintainer email="a.san.malyshev@gmail.com">Alexander Malyshev</maintainer>
 
-
-  <!-- One license tag required, multiple allowed, one license per tag -->
-  <license>MIT</license>
+  <license>GPLv2</license>
 
   <url type="website">https://github.com/asanmalyshev/speak_out_loud</url>
 

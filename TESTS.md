@@ -10,7 +10,7 @@
 
 [2.Turtle sim](#turtle-sim-test)
 
-<!-- [3.Turtlebot3](#turtlebot3-test) -->
+[3.A cart in gazebo](#cart-in-gazebo)
 
 ## Testing priorites in multi-client regime
 For testing open four terminal session.
@@ -317,6 +317,11 @@ Speaking phrases:
 * arrow left - 'Поворачиваю налево'
 * arrow right - 'Поворачиваю right'
 
-<!-- ## Turtlebot3 test -->
-<!-- This test requires [turtlebot3](https://emanual.robotis.com). -->
-<!-- Try [this](https://automaticaddison.com/how-to-launch-the-turtlebot3-simulation-with-ros/) installation instruction. -->
+## Cart in gazebo
+
+Test works only with ROS Melodic.
+
+Download repo from link below and follow instructions in README
+
+https://github.com/asanmalyshev/speak_out_loud_gazebo_tests
+
