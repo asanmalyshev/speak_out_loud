@@ -1,5 +1,4 @@
 # Speak out loud
-## Description
 *Speak out text from topic*
 
 <p align="center">
@@ -14,6 +13,22 @@
 *README is available on languages: [English](README.md), [Russian](README.ru.md)*
 
 *[TESTING scenarios](TESTS.md)*
+
+## Description
+speak_out_loud - ROS package to generate speech from text, that supports russian language.
+
+Package is based on voice generator RHVoice and high level audio interface for speech synthesis Speech Dispatcher.
+
+To say text just send it packed into message of SpeakGoal type in topic *speak_out_loud_texts*.
+
+Advanced speech control includes:
+* priorities, which allows to proiritize one messages over anothers;
+* whitelist to allow only a few nodes to speak;
+* blacklist to block messages from some nodes;
+* debug topic to provide extra information (if reqired).
+
+Author:  Alexander Malyshev <asanmalyshev AT gmail DOT com>               
+Youtube video with some examples (in Russian): https://youtu.be/uVPauu7p71E
 
 ## Dependencies
 Package depends on [RHVoice](https://github.com/Olga-Yakovleva/RHVoice/) and [Speech Dispatcher (spd)](https://github.com/brailcom/speechd).
