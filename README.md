@@ -89,12 +89,18 @@ Users may define whitelist/blacklist of nodes to work with.
 See more in [section](#tuning-nodes-to-be-spoken).
 
 ### Sound trouble
-Sometimes noisy sounds come with voice. The origins of them are unknown.
-But there're couple ways to get rid of them:
-1. Wait. Sometimes they disappears soon.
-2. In console type `pulseaudio -k` (usually that's enough).
-3. Check speakers output lvl in alsamixer (type `alsamixer` in bash). If it's high - lower it.
+Sometimes glitches, skips or crackling appears. 
+To get rid of them, some changes in pulseaudio setup must be done.
 
+Edit file `/etc/pulse/default.pa/`:
+find a line `load-module module-udev-detect` and replace it with `load-module module-udev-detect tsched=0`.
+Reboot your system. There must be no flickering.
+
+### Speech is cutted
+Speech dispatcher by default is configured to shut ifself down after sometime if no clients are connected. 
+As speak_out_loud server after sending a text disconnects from speech dispatcher, it is possible some texts will be cutted.
+To avoid that edit file `/etc/speech-dispatcher/speechd.conf`:
+find Parameter `Timeout`, uncomment it and change a number of seconds it must wait after disconnection of the last client or setup it =0 to let server exist as long as it can.
 
 ## Testing
 There're two ways to test the package: 
