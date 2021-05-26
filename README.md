@@ -78,9 +78,12 @@ Some parameters are available to configure launch.
 | --- | --- | --- | ---
 | ___output___ | direct logs output | screen/log | screen 
 | ___language___ | language to be used (define voices choice) | ru/en | ru 
+| ___default_voice___ | default voice | some voices: elena/aleksndr | elena 
 | ___whitelist___ | whitelist of nodes to be spoken | list of values | [ ] 
 | ___blacklist___ | blacklist of nodes not to be spoken | list of values | [ ] 
 | ___debug___ | use debug sound output | True/False | False
+
+Full list of available voices might be found [here](https://github.com/RHVoice/RHVoice/wiki/Latest-version).
 
 Russian voices work well with english too. 
 Using them also let you mixing russian and english words.
@@ -200,7 +203,6 @@ There might be many texts of IMPORTANT and MESSAGE type (they form subqueues in 
 Three operations with new messages in Q take place: cancelation, append and replace.
 New IMPORTANT and MESSAGE are appended at the end of subqueue,
 meanwhile other types replace stored values.
-Male voice read IMPORTANT messages, for anothers female voice is used.
 
 At any moment both Q and CRT might be:
 - filled/partially filled with text (colored boxes) - there're texts in Q that must be read / there's a text that is being read now;

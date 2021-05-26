@@ -1,7 +1,20 @@
 <launch>
     <arg name="output" default="screen"/>
-    <!-- language possible values: ru/en -->
+    <!-- 
+      default language possible values: ru/en 
+      add more with installing package rhvoice-language_name
+      Example for Ubuntu: sudo apt install rhvoice-ukrainian
+    -->
     <arg name="language" default="ru"/> 
+    <!--
+      SOME VOICES
+      Full list: https://github.com/RHVoice/RHVoice/wiki/Latest-version
+      Russian: elena, anna, aleksandr, irina
+      English: alan, bdl, clb, slt,
+      Ukranian: natalia
+      Tatar: talgat
+    -->
+    <arg name="default_voice" default="elena"/> 
 
     <arg name="whitelist" default="[]"/>
     <arg name="blacklist" default="[]"/>
@@ -11,6 +24,7 @@
 
     <node name="speak_out_loud_srv" pkg="speak_out_loud" type="speak_out_loud_srv" output="$(arg output)">
       <param name="language" value="$(arg language)"/>
+      <param name="default_voice" value="$(arg default_voice)"/>
     </node>
 
     <node name="speak_out_loud_hub_node" pkg="speak_out_loud" type="speak_out_loud_hub_node.py" output="$(arg output)">
