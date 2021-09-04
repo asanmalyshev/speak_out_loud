@@ -1,6 +1,7 @@
 # goal
 string  sender_node   # sender node name 
 string  text          # text to read
+string  voice          # voice to speak with
 uint8    priority     # priority of text
 ---
 # result

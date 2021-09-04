@@ -22,9 +22,15 @@ void execute(const speak_out_loud::SpeakGoalConstPtr& goal, Server* as, string d
   string str_to_play = goal->text;
   SPDPriority priority;
   priority = static_cast<SPDPriority>(goal->priority);
-
+  string voice;
   string module = "rhvoice";
-  string voice = default_voice ;
+
+  if (goal->voice == ""){
+    voice = default_voice ;
+  }
+  else {
+    voice = goal->voice ;
+  }
 
   const char* client_name = ros::this_node::getName().c_str();
   SPDConnection* conn = spd_open(client_name, NULL, NULL, SPD_MODE_SINGLE);
