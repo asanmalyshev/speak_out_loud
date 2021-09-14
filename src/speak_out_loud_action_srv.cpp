@@ -55,9 +55,10 @@ void execute(const speak_out_loud::SpeakGoalConstPtr& goal, Server* as, string d
   spd_set_synthesis_voice(conn, voice.c_str());
   spd_set_notification_on(conn, SPD_BEGIN);
   spd_set_notification_on(conn, SPD_END);
-  spd_set_notification_on(conn, SPD_CANCEL);
+  // spd_set_notification_on(conn, SPD_CANCEL);
 
-  conn->callback_end = conn->callback_cancel = end_of_speech;
+  // conn->callback_end = conn->callback_cancel = end_of_speech;
+  conn->callback_end = end_of_speech;
   conn->callback_begin = begin_of_speech;
 
   spd_say(conn, priority, str_to_play.c_str());
