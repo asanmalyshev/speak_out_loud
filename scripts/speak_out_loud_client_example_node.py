@@ -19,8 +19,8 @@ class Client(object) :
         self.default_priority = Priority.TEXT
         self.goal.priority = self.default_priority
         self.load_params()
-        self._pub = rospy.Publisher("/speak_out_loud/texts", SpeakGoal, queue_size=1)
-        self._pub_debug = rospy.Publisher("/speak_out_loud/texts_debug", SpeakGoal, queue_size=1)
+        self._pub = rospy.Publisher("/sol/texts", SpeakGoal, queue_size=1)
+        self._pub_debug = rospy.Publisher("/sol/texts_debug", SpeakGoal, queue_size=1)
         rospy.on_shutdown(self.shutdown)
         # rospy.spin()
 

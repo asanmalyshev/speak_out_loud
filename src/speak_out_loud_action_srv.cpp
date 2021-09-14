@@ -70,12 +70,12 @@ void execute(const speak_out_loud::SpeakGoalConstPtr& goal, Server* as, string d
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "speak_out_srv");
+  ros::init(argc, argv, "sol_srv");
   ros::NodeHandle n;
   string default_voice;
   do_i_say_pub = n.advertise<std_msgs::Bool>("do_i_say", 10);
 
-  n.param<std::string>("speak_out_loud_srv/default_voice", default_voice, "elena");
+  n.param<std::string>("sol_srv/default_voice", default_voice, "elena");
 	cout << "Default voice: " +  default_voice << endl;
   Server server(n, "speak_out_loud", boost::bind(&execute, _1, &server, default_voice), false);
   server.start();

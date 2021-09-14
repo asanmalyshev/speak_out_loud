@@ -17,12 +17,12 @@ class Speaker(object) :
         self.default_priority = Priority.TEXT
         self.whitelist_on = False
         self.blacklist_on = False
-        rospy.Subscriber("/speak_out_loud/texts", SpeakGoal, self.speak_out_cb)
-        rospy.Subscriber("/speak_out_loud/texts_debug", SpeakGoal, self.speak_out_debug_cb)
-        rospy.Subscriber("/speak_out_loud/whitelist", String, self.whitelist_upd_cb)
-        rospy.Subscriber("/speak_out_loud/blacklist", String, self.blacklist_upd_cb)
-        rospy.Subscriber("/speak_out_loud/whitelist_on", Bool, self.whitelist_on_cb)
-        rospy.Subscriber("/speak_out_loud/blacklist_on", Bool, self.blacklist_on_cb)
+        rospy.Subscriber("/sol/texts", SpeakGoal, self.speak_out_cb)
+        rospy.Subscriber("/sol/texts_debug", SpeakGoal, self.speak_out_debug_cb)
+        rospy.Subscriber("/sol/whitelist", String, self.whitelist_upd_cb)
+        rospy.Subscriber("/sol/blacklist", String, self.blacklist_upd_cb)
+        rospy.Subscriber("/sol/whitelist_on", Bool, self.whitelist_on_cb)
+        rospy.Subscriber("/sol/blacklist_on", Bool, self.blacklist_on_cb)
         self.client = actionlib.SimpleActionClient('speak_out_loud', SpeakAction)
         self.client.wait_for_server()
         rospy.loginfo("Voice hub is ready to get texts. Server is working")
