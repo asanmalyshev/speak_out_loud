@@ -16,7 +16,7 @@
     <!-- <arg name="whitelist" default="[/speak_out_loud_client]"/> -->
     <!-- <arg name="blacklist" default="[/speak_out_loud_client]"/> -->
 
-    <node name="sol_srv" pkg="speak_out_loud" type="speak_out_loud_srv" output="$(arg output)" ns="sol">
+    <node name="sol_srv_node" pkg="speak_out_loud" type="speak_out_loud_srv" output="$(arg output)" ns="sol">
       <param name="default_voice" value="$(arg default_voice)"/>
     </node>
 

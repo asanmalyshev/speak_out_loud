@@ -1,5 +1,9 @@
 #include <iostream>
 #include <string>
+#include <signal.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
 
 #include <actionlib/server/simple_action_server.h>
 #include "speak_out_loud/SpeakAction.h"
@@ -31,42 +35,29 @@ void begin_of_speech(size_t msg_id, size_t client_id, SPDNotificationType type)
   do_i_say_pub.publish(msg_do_i_say);
 }
 
-void execute(const speak_out_loud::SpeakGoalConstPtr& goal, Server* as, string default_voice) 
+
+void execute(const speak_out_loud::SpeakGoalConstPtr& goal, Server* as, string default_voice, SPDConnection* conn ) 
 {
   speak_out_loud::SpeakResult result;
-  
   string str_to_play = goal->text;
-  SPDPriority priority;
-  priority = static_cast<SPDPriority>(goal->priority);
-  string voice;
-  string module = "rhvoice";
+  SPDPriority priority = static_cast<SPDPriority>(goal->priority);
+  string voice = default_voice;
 
-  if (goal->voice == ""){
-    voice = default_voice ;
-  }
-  else {
+  if (goal->voice != ""){
     voice = goal->voice ;
   }
 
-  const char* client_name = ros::this_node::getName().c_str();
-  // SPDConnection* conn = spd_open(client_name, NULL, NULL, SPD_MODE_SINGLE);
-  SPDConnection* conn = spd_open(client_name, NULL, NULL, SPD_MODE_THREADED);
-  spd_set_output_module(conn, module.c_str());
   spd_set_synthesis_voice(conn, voice.c_str());
-  spd_set_notification_on(conn, SPD_BEGIN);
-  spd_set_notification_on(conn, SPD_END);
-  // spd_set_notification_on(conn, SPD_CANCEL);
-
-  // conn->callback_end = conn->callback_cancel = end_of_speech;
-  conn->callback_end = end_of_speech;
-  conn->callback_begin = begin_of_speech;
-
   spd_say(conn, priority, str_to_play.c_str());
   // spd_close(conn);
 
   as->setSucceeded(result);
 }
 
+void srv_sig_handler(int s){
+           cout << "Exit speak out loud server" << endl;
+           exit(1);
+}
 
 int main(int argc, char** argv)
 {
@@ -75,9 +66,25 @@ int main(int argc, char** argv)
   string default_voice;
   do_i_say_pub = n.advertise<std_msgs::Bool>("do_i_say", 10);
 
+  // signal (SIGINT,srv_sig_handler);
+  // signal (SIGTERM,srv_sig_handler);
+
+  const char* client_name = ros::this_node::getName().c_str();
+  // SPDConnection* conn = spd_open(client_name, NULL, NULL, SPD_MODE_SINGLE);
+  SPDConnection* conn = spd_open(client_name, NULL, NULL, SPD_MODE_THREADED);
+  const string module = "rhvoice";
+  spd_set_output_module(conn, module.c_str());
+  spd_set_notification_on(conn, SPD_BEGIN);
+  spd_set_notification_on(conn, SPD_END);
+  // spd_set_notification_on(conn, SPD_CANCEL);
+
+  conn->callback_end = end_of_speech;
+  conn->callback_begin = begin_of_speech;
+  // conn->callback_cancel = end_of_speech;
+
   n.param<std::string>("sol_srv/default_voice", default_voice, "elena");
 	cout << "Default voice: " +  default_voice << endl;
-  Server server(n, "speak_out_loud", boost::bind(&execute, _1, &server, default_voice), false);
+  Server server(n, "sol_internal_action", boost::bind(&execute, _1, &server, default_voice, conn), false);
   server.start();
   ros::spin();
   return 0;

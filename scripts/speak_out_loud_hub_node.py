@@ -8,7 +8,7 @@ import actionlib
 from speak_out_loud.msg import SpeakAction, SpeakGoal, Priority
 from std_msgs.msg import String, Bool
 
-class Speaker(object) :
+class SOLHub(object) :
     """
     A hub to forward texts from different nodes on action server 
     """
@@ -23,7 +23,7 @@ class Speaker(object) :
         rospy.Subscriber("/sol/blacklist", String, self.blacklist_upd_cb)
         rospy.Subscriber("/sol/whitelist_on", Bool, self.whitelist_on_cb)
         rospy.Subscriber("/sol/blacklist_on", Bool, self.blacklist_on_cb)
-        self.client = actionlib.SimpleActionClient('speak_out_loud', SpeakAction)
+        self.client = actionlib.SimpleActionClient('sol_internal_action', SpeakAction)
         self.client.wait_for_server()
         rospy.loginfo("Voice hub is ready to get texts. Server is working")
         self.goal = SpeakGoal()
@@ -107,8 +107,8 @@ class Speaker(object) :
 
 if __name__ == '__main__':
     try:
-        rospy.init_node('speaker')
-        speaker = Speaker()
+        rospy.init_node('sol_hub')
+        sol_hub = SOLHub()
     except rospy.ROSInterruptException:
         pass
 
