@@ -20,6 +20,7 @@ using namespace std;
 
 std_msgs::Bool msg_do_i_say;
 ros::Publisher do_i_say_pub;
+SPDConnection* conn;
 
 typedef actionlib::SimpleActionServer<speak_out_loud::SpeakAction> Server;
 
@@ -36,7 +37,7 @@ void begin_of_speech(size_t msg_id, size_t client_id, SPDNotificationType type)
 }
 
 
-void execute(const speak_out_loud::SpeakGoalConstPtr& goal, Server* as, string default_voice, SPDConnection* conn ) 
+void execute(const speak_out_loud::SpeakGoalConstPtr& goal, Server* as, string default_voice) 
 {
   speak_out_loud::SpeakResult result;
   string str_to_play = goal->text;
@@ -49,29 +50,20 @@ void execute(const speak_out_loud::SpeakGoalConstPtr& goal, Server* as, string d
 
   spd_set_synthesis_voice(conn, voice.c_str());
   spd_say(conn, priority, str_to_play.c_str());
-  // spd_close(conn);
 
   as->setSucceeded(result);
 }
 
 void srv_sig_handler(int s){
-           cout << "Exit speak out loud server" << endl;
-           exit(1);
+  cout << "Exit speak out loud server" << endl;
+  spd_close(conn);
+  // exit(1);
 }
 
-int main(int argc, char** argv)
-{
-  ros::init(argc, argv, "sol_srv");
-  ros::NodeHandle n;
-  string default_voice;
-  do_i_say_pub = n.advertise<std_msgs::Bool>("do_i_say", 10);
-
-  // signal (SIGINT,srv_sig_handler);
-  // signal (SIGTERM,srv_sig_handler);
-
+void spd_config(){
   const char* client_name = ros::this_node::getName().c_str();
   // SPDConnection* conn = spd_open(client_name, NULL, NULL, SPD_MODE_SINGLE);
-  SPDConnection* conn = spd_open(client_name, NULL, NULL, SPD_MODE_THREADED);
+  conn = spd_open(client_name, NULL, NULL, SPD_MODE_THREADED);
   const string module = "rhvoice";
   spd_set_output_module(conn, module.c_str());
   spd_set_notification_on(conn, SPD_BEGIN);
@@ -81,10 +73,23 @@ int main(int argc, char** argv)
   conn->callback_end = end_of_speech;
   conn->callback_begin = begin_of_speech;
   // conn->callback_cancel = end_of_speech;
+}
+
+int main(int argc, char** argv)
+{
+  ros::init(argc, argv, "sol_srv");
+  ros::NodeHandle n;
+  string default_voice;
+  do_i_say_pub = n.advertise<std_msgs::Bool>("do_i_say", 10);
+
+  spd_config();
+
+  // signal (SIGINT,srv_sig_handler);
+  // signal (SIGTERM,srv_sig_handler);
 
   n.param<std::string>("sol_srv/default_voice", default_voice, "elena");
 	cout << "Default voice: " +  default_voice << endl;
-  Server server(n, "sol_internal_action", boost::bind(&execute, _1, &server, default_voice, conn), false);
+  Server server(n, "sol_internal_action", boost::bind(&execute, _1, &server, default_voice), false);
   server.start();
   ros::spin();
   return 0;
