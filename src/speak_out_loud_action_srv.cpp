@@ -21,6 +21,7 @@ using namespace std;
 std_msgs::Bool msg_do_i_say;
 ros::Publisher do_i_say_pub;
 SPDConnection* conn;
+string default_voice;
 
 typedef actionlib::SimpleActionServer<speak_out_loud::SpeakAction> Server;
 
@@ -37,7 +38,7 @@ void begin_of_speech(size_t msg_id, size_t client_id, SPDNotificationType type)
 }
 
 
-void execute(const speak_out_loud::SpeakGoalConstPtr& goal, Server* as, string default_voice) 
+void execute(const speak_out_loud::SpeakGoalConstPtr& goal, Server* as) 
 {
   speak_out_loud::SpeakResult result;
   string str_to_play = goal->text;
@@ -79,7 +80,6 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "sol_srv");
   ros::NodeHandle n;
-  string default_voice;
   do_i_say_pub = n.advertise<std_msgs::Bool>("do_i_say", 10);
 
   spd_config();
@@ -87,9 +87,17 @@ int main(int argc, char** argv)
   // signal (SIGINT,srv_sig_handler);
   // signal (SIGTERM,srv_sig_handler);
 
-  n.param<std::string>("sol_srv/default_voice", default_voice, "elena");
+  n.param<std::string>("sol_srv/default_voice", default_voice);
+
+  // if (n.hasParam("/default_voice")){
+  // if (ros::param::has("default_voice")){
+  //   cout << "Yup!" << endl;
+  // } else {
+  //   cout << "No!" << endl;
+  // }
+
 	cout << "Default voice: " +  default_voice << endl;
-  Server server(n, "sol_internal_action", boost::bind(&execute, _1, &server, default_voice), false);
+  Server server(n, "sol_internal_action", boost::bind(&execute, _1, &server), false);
   server.start();
   ros::spin();
   return 0;
