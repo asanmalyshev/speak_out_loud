@@ -100,7 +100,7 @@ class SOLHub(object) :
                 rospy.loginfo("Node %s is in blacklist. Text won't be read out loud", msg.sender_node)
 
     def fix_priority(self, priority):
-        if not Priority.MIN < priority < Priority.MAX:
+        if not 0 < priority < 6:
             rospy.loginfo("Unknown priority for speaking text. Using default priority = %s", self.default_priority)
             priority = self.default_priority
         return priority

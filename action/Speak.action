@@ -6,14 +6,20 @@ uint8    priority     # priority of text
 bool    debug         # debug message
 ---
 # result
-uint8 success         # result of reading text (not used in current version) 
-uint8 MIN           = 0
+int32 msg_id          # id of queued message
 uint8 IMPORTANT     = 1
 uint8 MESSAGE       = 2
 uint8 TEXT          = 3
 uint8 NOTIFICATION  = 4
 uint8 PROGRESS      = 5
-uint8 MAX           = 6
 ---
 # feedback
-string message        # feedback of operation (not used in current version)
+int32 msg_id          # id of queued message
+uint8 msg_status      # status of queued message
+string msg            # msg to say
+uint8 SPD_BEGIN       = 1
+uint8 SPD_END         = 2
+uint8 SPD_INDEX_MARKS = 3
+uint8 SPD_CANCEL      = 4
+uint8 SPD_PAUSE       = 5
+uint8 SPD_RESUME      = 6
