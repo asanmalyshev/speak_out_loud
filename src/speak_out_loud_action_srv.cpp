@@ -50,7 +50,7 @@ void cancel_of_speech(size_t msg_id, size_t client_id, SPDNotificationType type)
 void execute(const speak_out_loud::SpeakGoalConstPtr& goal, Server* as) 
 {
   speak_out_loud::SpeakResult result;
-  speak_out_loud::SpeakFeedback feedback;
+  // speak_out_loud::SpeakFeedback feedback;
   string str_to_play = goal->text;
   SPDPriority priority = static_cast<SPDPriority>(goal->priority);
   string voice = default_voice;
@@ -61,9 +61,9 @@ void execute(const speak_out_loud::SpeakGoalConstPtr& goal, Server* as)
 
   spd_set_synthesis_voice(conn, voice.c_str());
   int msg_id = spd_say(conn, priority, str_to_play.c_str());
-  feedback.msg_id = msg_id;
-  feedback.msg = str_to_play;
-  as->publishFeedback(feedback);
+  // feedback.msg_id = msg_id;
+  // feedback.msg = str_to_play;
+  // as->publishFeedback(feedback);
   result.msg_id = msg_id;
   as->setSucceeded(result);
 }

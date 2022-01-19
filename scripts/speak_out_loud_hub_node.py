@@ -5,7 +5,7 @@ import rospy
 import actionlib
 
 # from collections import defaultdict
-from speak_out_loud.msg import SpeakAction, SpeakGoal, Priority
+from speak_out_loud.msg import SpeakAction, SpeakGoal, SpeakFeedback, Priority
 from std_msgs.msg import String, Bool
 
 class SOLHub(object) :
@@ -18,17 +18,48 @@ class SOLHub(object) :
         self.whitelist_on = False
         self.blacklist_on = False
         rospy.Subscriber("/sol/texts", SpeakGoal, self.speak_out_cb)
-        rospy.Subscriber("/sol/texts_debug", SpeakGoal, self.speak_out_debug_cb)
-        rospy.Subscriber("/sol/whitelist", String, self.whitelist_upd_cb)
-        rospy.Subscriber("/sol/blacklist", String, self.blacklist_upd_cb)
-        rospy.Subscriber("/sol/whitelist_on", Bool, self.whitelist_on_cb)
-        rospy.Subscriber("/sol/blacklist_on", Bool, self.blacklist_on_cb)
+        # rospy.Subscriber("/sol/texts_debug", SpeakGoal, self.speak_out_debug_cb)
+        # rospy.Subscriber("/sol/whitelist", String, self.whitelist_upd_cb)
+        # rospy.Subscriber("/sol/blacklist", String, self.blacklist_upd_cb)
+        # rospy.Subscriber("/sol/whitelist_on", Bool, self.whitelist_on_cb)
+        # rospy.Subscriber("/sol/blacklist_on", Bool, self.blacklist_on_cb)
+        rospy.Subscriber("/sol/do_i_say", SpeakFeedback, self.speech_status_cb)
         self.client = actionlib.SimpleActionClient('sol_internal_action', SpeakAction)
+        self.server_queue = actionlib.SimpleActionServer('sol_queue', SpeakAction, self.queue_cb, False)
         self.client.wait_for_server()
+        self.server_queue.start()
         rospy.loginfo("Voice hub is ready to get texts. Server is working")
         self.goal = SpeakGoal()
         self.load_params()
+        self.speech_list = {}
         rospy.spin()
+
+    def speech_status_cb(self, msg):
+        self.speech_list[msg.msg_id] = msg.msg_status
+        rospy.loginfo(self.speech_list)
+
+    def queue_cb(self, msg):
+        msg.priority = self.fix_priority(msg.priority)
+        self.client.send_goal(msg,done_cb=self.done_cb)
+        while not self.client.wait_for_result():
+            pass
+        msg_id = self.client.get_result().msg_id
+        if not msg_id in self.speech_list:
+            self.speech_list[msg_id] = -1
+
+        while not (self.speech_list[msg_id] in [2,4,5,6]):
+            pass
+
+        if self.speech_list[msg_id] == 2:
+            self.server_queue.set_succeeded()
+        else:
+            self.server_queue.set_aborted()
+
+    def done_cb(self, state, result):
+        self.speech_list[result.msg_id] = -1;
+        rospy.loginfo(self.speech_list)
+
+
 
     def whitelist_upd_cb(self, msg):
         if msg.data not in self.whitelist:
@@ -44,7 +75,7 @@ class SOLHub(object) :
         else:
             self.whitelist_on = False
             rospy.logwarn("Whitelist is off")
-         
+
     def blacklist_upd_cb(self, msg):
         if msg.data not in self.blacklist:
             self.blacklist.append(msg.data) 
