@@ -32,22 +32,33 @@ class SOLHub(object) :
         self.goal = SpeakGoal()
         self.load_params()
         self.speech_list = {}
+        self.speaking_fragment_id = None
         rospy.spin()
 
     def speech_status_cb(self, msg):
+
         self.speech_list[msg.msg_id] = msg.msg_status
+
+        if (msg.msg_status == SpeakFeedback.SPD_BEGIN):
+            self.speaking_fragment_id = msg.msg_id
+        elif (msg.msg_status == SpeakFeedback.SPD_END):
+            self.speaking_fragment_id = None
         rospy.loginfo(self.speech_list)
 
     def queue_cb(self, msg):
         msg.priority = self.fix_priority(msg.priority)
-        self.client.send_goal(msg,done_cb=self.done_cb)
+        # self.client.send_goal(msg,done_cb=self.done_cb)
+        self.client.send_goal(msg)
         while not self.client.wait_for_result():
             pass
         msg_id = self.client.get_result().msg_id
         if not msg_id in self.speech_list:
             self.speech_list[msg_id] = -1
 
-        while not (self.speech_list[msg_id] in [2,4,5,6]):
+        # while self.speech_list[msg_id] not in [SpeakFeedback.SPD_END, 
+        #     SpeakFeedback.SPD_CANCEL, SpeakFeedback.SPD_PAUSE, SpeakFeedback.SPD_RESUME]:
+            # pass
+        while self.speech_list[msg_id] not in [2,4,5,6]:
             pass
 
         if self.speech_list[msg_id] == 2:
@@ -131,9 +142,21 @@ class SOLHub(object) :
                 rospy.loginfo("Node %s is in blacklist. Text won't be read out loud", msg.sender_node)
 
     def fix_priority(self, priority):
-        if not 0 < priority < 6:
+        if not Priority.MIN < priority < Priority.MAX:
             rospy.loginfo("Unknown priority for speaking text. Using default priority = %s", self.default_priority)
             priority = self.default_priority
+            # priority mapping
+            if priority == Priority.IMPORTANT:
+                priority = speechd.Priority.IMPORTANT
+            elif priority == Priority.MESSAGE:
+                priority = speechd.Priority.MESSAGE
+            elif priority == Priority.TEXT:
+                priority = speechd.Priority.TEXT
+            elif priority == Priority.NOTIFICATION:
+                priority = speechd.Priority.NOTIFICATION
+            elif priority == Priority.PROGRESS:
+                priority = speechd.Priority.PROGRESS
+
         return priority
 
 if __name__ == '__main__':
