@@ -22,12 +22,13 @@
       <!--   <param name="default_voice" value="$(arg default_voice)"/> -->
       <!-- </node> -->
 
-      <node name="sol_server" pkg="speak_out_loud" type="sol_server.py" output="$(arg output)"/>
-      <!-- <node name="sol_hub_node" pkg="speak_out_loud" type="sol_server.py" output="$(arg output)"> -->
+      <!-- <node name="sol_server" pkg="speak_out_loud" type="sol_server.py" output="$(arg output)"/> -->
+      <node name="sol_hub_node" pkg="speak_out_loud" type="sol_server.py" output="$(arg output)">
       <!--   <rosparam param="whitelist" subst_value="True">$(arg whitelist)</rosparam> -->
       <!--   <rosparam param="blacklist" subst_value="True">$(arg blacklist)</rosparam> -->
-      <!--   <param name="debug" value="$(arg debug)"/> -->
-      <!-- </node> -->
+        <!-- <param name="debug" value="$(arg debug)"/> -->
+        <param name="default_voice" value="$(arg default_voice)"/>
+      </node>
 
     </group>
 </launch>

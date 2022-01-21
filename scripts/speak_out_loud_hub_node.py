@@ -142,21 +142,9 @@ class SOLHub(object) :
                 rospy.loginfo("Node %s is in blacklist. Text won't be read out loud", msg.sender_node)
 
     def fix_priority(self, priority):
-        if not Priority.MIN < priority < Priority.MAX:
+        if not 0 < priority < 6:
             rospy.loginfo("Unknown priority for speaking text. Using default priority = %s", self.default_priority)
             priority = self.default_priority
-            # priority mapping
-            if priority == Priority.IMPORTANT:
-                priority = speechd.Priority.IMPORTANT
-            elif priority == Priority.MESSAGE:
-                priority = speechd.Priority.MESSAGE
-            elif priority == Priority.TEXT:
-                priority = speechd.Priority.TEXT
-            elif priority == Priority.NOTIFICATION:
-                priority = speechd.Priority.NOTIFICATION
-            elif priority == Priority.PROGRESS:
-                priority = speechd.Priority.PROGRESS
-
         return priority
 
 if __name__ == '__main__':

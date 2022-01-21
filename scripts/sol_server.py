@@ -17,15 +17,16 @@ class SOLServer(object) :
     def __init__(self):
         self.load_params()
         rospy.Subscriber("/sol/texts", SpeakGoal, self.speak_out_cb)
-        # do_i_say_pub = rospy.Publisher("/sol/do_i_say", Bool, queue_size=1)
+        self.do_i_say_pub = rospy.Publisher("/sol/do_i_say", Bool, queue_size=1)
 
         self._client = speechd.SSIPClient('sol_ssip_client')
         self._client.set_output_module('rhvoice')
         self._client.set_synthesis_voice(self.defaut_voice)
+        self.speech_dict = {}
+        self.STATUS_UNDEFINED = -1
 
     def load_params(self):
         self.defaut_voice = rospy.get_param("~default_voice", "elena")
-        self.default_priority = rospy.get_param("~default_priority", Priority.TEXT)
 
     def fix_priority(self, priority):
         if not Priority.MIN < priority < Priority.MAX:
@@ -47,20 +48,31 @@ class SOLServer(object) :
 
     def speak_out_cb(self, msg):
         priority = self.fix_priority(msg.priority)
-        msg_id = self.spd_say(priority, msg.text)
+        msg_id = self.spd_say(priority, msg.text, msg.voice)
+        self.speech_dict[msg_id] = self.STATUS_UNDEFINED
         rospy.logwarn(msg_id)
 
-    def spd_say(self, priority, text):
+    def spd_say(self, priority, text, voice):
         msg_id = -1
         self._client.set_synthesis_voice(self.defaut_voice)
         self._client.set_priority(priority)
+        if voice=='':
+            self._client.set_synthesis_voice(self.defaut_voice)
+        else:
+            self._client.set_synthesis_voice(voice)
         def callback(callback_type):
             if callback_type == speechd.CallbackType.BEGIN:
-                rospy.loginfo("[%s] b",msg_id)
+                self.do_i_say_pub.publish(Bool(True))
+                self.speech_dict[msg_id] = speechd.CallbackType.BEGIN
+                # rospy.loginfo("[%s] b",msg_id)
             elif callback_type == speechd.CallbackType.END:
-                rospy.loginfo("[%s] e",msg_id)
+                self.speech_dict[msg_id] = speechd.CallbackType.END
+                self.do_i_say_pub.publish(Bool(False))
+                # rospy.loginfo("[%s] e",msg_id)
             elif callback_type == speechd.CallbackType.CANCEL:
-                rospy.loginfo("[%s] c",msg_id)
+                self.speech_dict[msg_id] = speechd.CallbackType.CANCEL
+                # rospy.loginfo("[%s] c",msg_id)
+            rospy.logwarn(self.speech_dict)
 
         spd_result = self._client.speak(text, callback=callback,
                            event_types=(speechd.CallbackType.BEGIN,
