@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
   actionlib_msgs
   roscpp
+  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -23,6 +24,11 @@ find_package(Boost REQUIRED COMPONENTS system)
 add_message_files(
   FILES
   Priority.msg
+)
+
+add_service_files(
+  FILES
+  SpeakFilter.srv
 )
 
 add_action_files(
@@ -40,7 +46,7 @@ generate_messages(
 ## catkin specific configuration ##
 ###################################
 catkin_package(
- CATKIN_DEPENDS actionlib actionlib_msgs roscpp
+ CATKIN_DEPENDS actionlib actionlib_msgs roscpp message_runtime
 )
 
 ###########

@@ -7,6 +7,7 @@ import sys
 import speechd
 
 from speak_out_loud.msg import SpeakGoal, SpeakAction, SpeakFeedback, SpeakResult, Priority
+from speak_out_loud.srv import SpeakFilter, SpeakFilterResponse
 from std_msgs.msg import String, Bool
 
 class SOLServer(object) :
@@ -22,18 +23,84 @@ class SOLServer(object) :
         self._client.set_output_module('rhvoice')
         self._client.set_synthesis_voice(self.defaut_voice)
         self.default_priority = Priority.TEXT
-        self.STATUS_UNDEFINED = -1
 
-        rospy.Subscriber("/sol/texts", SpeakGoal, self.speak_task_cb)
+        self.whitelist_on = False
+        self.whitelist = []
+        self.blacklist_on = False
+        self.blacklist = []
 
-        self.server_sol = actionlib.ActionServer('sol_server', SpeakAction, 
-                goal_cb=self.speak_action_srv_task_cb, auto_start=False)
+        if self.use_action_interface:
+            self.server_sol = actionlib.ActionServer('sol_server', SpeakAction, 
+                    goal_cb=self.speak_action_srv_task_cb, auto_start=False)
+            self.server_sol.start()
+        else:
+            rospy.Subscriber("/sol/texts", SpeakGoal, self.speak_task_cb)
 
-        self.server_sol.start()
+        rospy.Service('whitelist_control', SpeakFilter, self.whitelist_control)
+        rospy.Service('blacklist_control', SpeakFilter, self.blacklist_control)
         rospy.loginfo('SOL server is started')
+
+    def whitelist_control(self, req):
+        response = SpeakFilterResponse()
+        # turn on/off list
+        if req.name == '':
+            if req.operation != self.whitelist_on:
+                self.whitelist_on = req.operation
+                if self.whitelist_on:
+                    rospy.logwarn("Whitelist is on")
+                else:
+                    rospy.logwarn("Whitelist is off")
+        else:
+            # add in list
+            if req.operation:
+                if req.name not in self.whitelist:
+                    self.whitelist.append(req.name)
+                    rospy.logwarn("Whitelist is extended: %s", self.whitelist)
+            # remove from list
+            else:
+                if req.name in self.whitelist:
+                    self.whitelist.remove(req.name)
+                    rospy.logwarn("Whitelist is reduced: %s", self.whitelist)
+
+        response.nameslist = self.whitelist
+        response.status = self.whitelist_on
+        return response
+
+    def blacklist_control(self, req):
+        # turn on/off list
+        response = SpeakFilterResponse()
+        if req.name == '':
+            if req.operation != self.blacklist_on:
+                self.blacklist_on = req.operation
+                if self.whitelist_on:
+                    self.blacklist_on = False
+                    rospy.logwarn("Blacklist can't work simultaniously with whitelist")
+                    rospy.logwarn("Blacklist is off")
+                else:
+                    if self.blacklist_on:
+                        rospy.logwarn("Blacklist is on")
+                    else:
+                        rospy.logwarn("Blacklist is off")
+        else:
+            # add in list
+            if req.operation:
+                if req.name not in self.blacklist:
+                    self.blacklist.append(req.name)
+                    rospy.logwarn("Blacklist is extended: %s", self.blacklist)
+            # remove from list
+            else:
+                if req.name in self.blacklist:
+                    self.blacklist.remove(req.name)
+                    rospy.logwarn("Blacklist is reduced: %s", self.blacklist)
+
+        response.nameslist = self.blacklist
+        response.status = self.blacklist_on
+        return response
+
 
     def load_params(self):
         self.defaut_voice = rospy.get_param("~default_voice", "elena")
+        self.use_action_interface = rospy.get_param("~use_action_interface", True)
 
     def speak_action_srv_task_cb(self, req):
         result_msg = SpeakResult()
