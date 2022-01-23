@@ -53,20 +53,20 @@ ${catkin_INCLUDE_DIRS}
 ${Boost_INCLUDE_DIRS}
 )
 
-add_executable(${PROJECT_NAME}_srv src/speak_out_loud_action_srv.cpp)
+# add_executable(${PROJECT_NAME}_srv src/speak_out_loud_action_srv.cpp)
 
-add_dependencies(${PROJECT_NAME}_srv ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(${PROJECT_NAME}_srv ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-target_link_libraries(${PROJECT_NAME}_srv
-  ${catkin_LIBRARIES}
-  speechd
-)
+# target_link_libraries(${PROJECT_NAME}_srv
+#   ${catkin_LIBRARIES}
+#   speechd
+# )
 
 #############
 ## Install ##
 #############
 
-catkin_install_python(PROGRAMS scripts/sol_server.py scripts/speak_out_loud_hub_node.py scripts/speak_out_loud_client_example_node.py examples/turtlesim/speak_out_loud_turtle_sim.py
+catkin_install_python(PROGRAMS scripts/sol_server.py scripts/speak_out_loud_client_example_node.py examples/turtlesim/speak_out_loud_turtle_sim.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
