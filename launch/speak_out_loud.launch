@@ -9,19 +9,20 @@
       Tatar: talgat
     -->
     <arg name="default_voice" default="elena"/> 
-
-    <!-- <arg name="whitelist" default="[]"/> -->
-    <!-- <arg name="blacklist" default="[]"/> -->
-    <!-- <arg name="debug" default="False"/> -->
+    <arg name="use_action_interface" default="True"/> 
+    <arg name="debug" default="False"/>
+    <arg name="whitelist" default="[]"/>
+    <arg name="blacklist" default="[]"/>
     <!-- <arg name="whitelist" default="[/speak_out_loud_client]"/> -->
     <!-- <arg name="blacklist" default="[/speak_out_loud_client]"/> -->
 
     <group ns="sol">
       <node name="sol_hub_node" pkg="speak_out_loud" type="sol_server.py" output="$(arg output)">
-      <!--   <rosparam param="whitelist" subst_value="True">$(arg whitelist)</rosparam> -->
-      <!--   <rosparam param="blacklist" subst_value="True">$(arg blacklist)</rosparam> -->
-        <!-- <param name="debug" value="$(arg debug)"/> -->
+        <param name="debug" value="$(arg debug)"/>
+        <rosparam param="whitelist" subst_value="True">$(arg whitelist)</rosparam>
+        <rosparam param="blacklist" subst_value="True">$(arg blacklist)</rosparam>
         <param name="default_voice" value="$(arg default_voice)"/>
+        <param name="use_action_interface" value="$(arg use_action_interface)"/>
       </node>
 
     </group>

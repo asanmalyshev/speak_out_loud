@@ -25,13 +25,13 @@ class SOLServer(object) :
         self.default_priority = Priority.TEXT
 
         self.whitelist_on = False
-        self.whitelist = []
         self.blacklist_on = False
-        self.blacklist = []
 
         if self.use_action_interface:
-            self.server_sol = actionlib.ActionServer('sol_server', SpeakAction, 
-                    goal_cb=self.speak_action_srv_task_cb, auto_start=False)
+            self.server_sol = actionlib.ActionServer('action_iface', SpeakAction, 
+                    goal_cb=self.speak_action_srv_task_cb,
+                    # cancel_cb=self.speak_action_srv_task_cancelation_cb, 
+                    auto_start=False)
             self.server_sol.start()
         else:
             rospy.Subscriber("/sol/texts", SpeakGoal, self.speak_task_cb)
@@ -48,6 +48,9 @@ class SOLServer(object) :
                 self.whitelist_on = req.operation
                 if self.whitelist_on:
                     rospy.logwarn("Whitelist is on")
+                    if self.blacklist_on:
+                        self.balcklist_on = False
+                        rospy.logwarn("Blacklist is off")
                 else:
                     rospy.logwarn("Whitelist is off")
         else:
@@ -99,23 +102,60 @@ class SOLServer(object) :
 
 
     def load_params(self):
+        self.debug_mode = rospy.get_param("~debug", False)
         self.defaut_voice = rospy.get_param("~default_voice", "elena")
         self.use_action_interface = rospy.get_param("~use_action_interface", True)
+        self.whitelist = rospy.get_param("~whitelist", [])
+        self.blacklist = rospy.get_param("~blacklist", [])
+        
+        if self.debug_mode:
+            rospy.logwarn('DEBUG mode is ON')
+
+        if len(self.whitelist):
+            rospy.logwarn("Topic whitelist: %s", self.whitelist)
+            self.whitelist_on = True
+        if len(self.blacklist):
+            rospy.logwarn("Topic blacklist: %s", self.blacklist)
+            self.blacklist_on = True
+            if len(self.whitelist):
+                rospy.logwarn("As there's whitelist, blacklist won't be used")
 
     def speak_action_srv_task_cb(self, req):
         result_msg = SpeakResult()
         goal = req.get_goal()
 
-        if len(goal.text) < 1:
-            err_msg = 'there is no text to speak out'
-            rospy.logerr(err_msg)
-            req.set_rejected(err_msg)
-            return
-
         priority = self.fix_priority(goal.priority)
-        msg_id = self.srv_spd_say(priority, req, goal)
-        result_msg.msg_id = msg_id
-        req.set_accepted()
+
+        if goal.debug: # process debug messages
+            if self.debug_mode:
+                msg_id = self.srv_spd_say(priority, req, goal)
+                result_msg.msg_id = msg_id
+                req.set_accepted()
+        else:
+            if not (self.whitelist_on or self.blacklist_on): # if there's no lists
+                msg_id = self.srv_spd_say(priority, req, goal)
+                result_msg.msg_id = msg_id
+                req.set_accepted()
+
+            elif self.whitelist_on: # due to whitelist
+                if goal.sender_node in self.whitelist:
+                    msg_id = self.srv_spd_say(priority, req, goal)
+                    result_msg.msg_id = msg_id
+                    req.set_accepted()
+                else:
+                    rospy.loginfo("Node %s is not in whitelist. Text won't be read out loud", goal.sender_node)
+
+            elif self.blacklist_on: # due to blacklist
+                if goal.sender_node not in self.blacklist:
+                    msg_id = self.srv_spd_say(priority, req, goal)
+                    result_msg.msg_id = msg_id
+                    req.set_accepted()
+                else:
+                    rospy.loginfo("Node %s is in blacklist. Text won't be read out loud", goal.sender_node)
+
+
+    # def speak_action_srv_task_cancelation_cb(self, req):
+    #     self._client.cancel(speechd.Scope.ALL)
 
     def fix_priority(self, priority):
         if not Priority.MIN < priority < Priority.MAX:
@@ -137,7 +177,25 @@ class SOLServer(object) :
 
     def speak_task_cb(self, msg):
         priority = self.fix_priority(msg.priority)
-        msg_id = self.spd_say(priority, msg)
+
+        if msg.debug: # process debug messages
+            if self.debug_mode:
+                msg_id = self.spd_say(priority, msg)
+        else:
+            if not (self.whitelist_on or self.blacklist_on): # if there's no lists
+                msg_id = self.spd_say(priority, msg)
+
+            elif self.whitelist_on: # due to whitelist
+                if msg.sender_node in self.whitelist:
+                    msg_id = self.spd_say(priority, msg)
+                else:
+                    rospy.loginfo("Node %s is not in whitelist. Text won't be read out loud", msg.sender_node)
+
+            elif self.blacklist_on: # due to blacklist
+                if msg.sender_node not in self.blacklist:
+                    msg_id = self.spd_say(priority, msg)
+                else:
+                    rospy.loginfo("Node %s is in blacklist. Text won't be read out loud", msg.sender_node)
 
     def srv_spd_say(self, priority, req, goal):
         msg_id = -1
@@ -158,7 +216,7 @@ class SOLServer(object) :
                 self.do_i_say_pub.publish(Bool(False))
             elif callback_type == speechd.CallbackType.CANCEL:
                 result_msg.msg_id = int(msg_id)
-                req.set_aborted(result_msg)
+                req.set_canceled(result_msg)
         spd_result = self._client.speak(goal.text, callback=callback,
                            event_types=(speechd.CallbackType.BEGIN,
                                         speechd.CallbackType.CANCEL,
@@ -194,7 +252,7 @@ class SOLServer(object) :
 
 if __name__ == '__main__':
     try:
-        rospy.init_node('sol_srv')
+        rospy.init_node('SOL')
         rospy.logwarn("Press Ctrl+C to shutdown node")
         solserver = SOLServer()
 
