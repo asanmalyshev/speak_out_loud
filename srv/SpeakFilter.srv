@@ -1,0 +1,5 @@
+string name
+bool operation
+---
+string[] nameslist
+bool    status

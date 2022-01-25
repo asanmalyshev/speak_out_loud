@@ -5,10 +5,10 @@ import rospy
 import actionlib
 
 # from collections import defaultdict
-from speak_out_loud.msg import SpeakAction, SpeakGoal, Priority
+from speak_out_loud.msg import SpeakAction, SpeakGoal, SpeakFeedback, Priority
 from std_msgs.msg import String, Bool
 
-class Speaker(object) :
+class SOLHub(object) :
     """
     A hub to forward texts from different nodes on action server 
     """
@@ -18,17 +18,59 @@ class Speaker(object) :
         self.whitelist_on = False
         self.blacklist_on = False
         rospy.Subscriber("/sol/texts", SpeakGoal, self.speak_out_cb)
-        rospy.Subscriber("/sol/texts_debug", SpeakGoal, self.speak_out_debug_cb)
-        rospy.Subscriber("/sol/whitelist", String, self.whitelist_upd_cb)
-        rospy.Subscriber("/sol/blacklist", String, self.blacklist_upd_cb)
-        rospy.Subscriber("/sol/whitelist_on", Bool, self.whitelist_on_cb)
-        rospy.Subscriber("/sol/blacklist_on", Bool, self.blacklist_on_cb)
-        self.client = actionlib.SimpleActionClient('speak_out_loud', SpeakAction)
+        # rospy.Subscriber("/sol/texts_debug", SpeakGoal, self.speak_out_debug_cb)
+        # rospy.Subscriber("/sol/whitelist", String, self.whitelist_upd_cb)
+        # rospy.Subscriber("/sol/blacklist", String, self.blacklist_upd_cb)
+        # rospy.Subscriber("/sol/whitelist_on", Bool, self.whitelist_on_cb)
+        # rospy.Subscriber("/sol/blacklist_on", Bool, self.blacklist_on_cb)
+        rospy.Subscriber("/sol/do_i_say", SpeakFeedback, self.speech_status_cb)
+        self.client = actionlib.SimpleActionClient('sol_internal_action', SpeakAction)
+        self.server_queue = actionlib.SimpleActionServer('sol_queue', SpeakAction, self.queue_cb, False)
         self.client.wait_for_server()
+        self.server_queue.start()
         rospy.loginfo("Voice hub is ready to get texts. Server is working")
         self.goal = SpeakGoal()
         self.load_params()
+        self.speech_list = {}
+        self.speaking_fragment_id = None
         rospy.spin()
+
+    def speech_status_cb(self, msg):
+
+        self.speech_list[msg.msg_id] = msg.msg_status
+
+        if (msg.msg_status == SpeakFeedback.SPD_BEGIN):
+            self.speaking_fragment_id = msg.msg_id
+        elif (msg.msg_status == SpeakFeedback.SPD_END):
+            self.speaking_fragment_id = None
+        rospy.loginfo(self.speech_list)
+
+    def queue_cb(self, msg):
+        msg.priority = self.fix_priority(msg.priority)
+        # self.client.send_goal(msg,done_cb=self.done_cb)
+        self.client.send_goal(msg)
+        while not self.client.wait_for_result():
+            pass
+        msg_id = self.client.get_result().msg_id
+        if not msg_id in self.speech_list:
+            self.speech_list[msg_id] = -1
+
+        # while self.speech_list[msg_id] not in [SpeakFeedback.SPD_END, 
+        #     SpeakFeedback.SPD_CANCEL, SpeakFeedback.SPD_PAUSE, SpeakFeedback.SPD_RESUME]:
+            # pass
+        while self.speech_list[msg_id] not in [2,4,5,6]:
+            pass
+
+        if self.speech_list[msg_id] == 2:
+            self.server_queue.set_succeeded()
+        else:
+            self.server_queue.set_aborted()
+
+    def done_cb(self, state, result):
+        self.speech_list[result.msg_id] = -1;
+        rospy.loginfo(self.speech_list)
+
+
 
     def whitelist_upd_cb(self, msg):
         if msg.data not in self.whitelist:
@@ -44,7 +86,7 @@ class Speaker(object) :
         else:
             self.whitelist_on = False
             rospy.logwarn("Whitelist is off")
-         
+
     def blacklist_upd_cb(self, msg):
         if msg.data not in self.blacklist:
             self.blacklist.append(msg.data) 
@@ -100,15 +142,15 @@ class Speaker(object) :
                 rospy.loginfo("Node %s is in blacklist. Text won't be read out loud", msg.sender_node)
 
     def fix_priority(self, priority):
-        if not Priority.MIN < priority < Priority.MAX:
+        if not 0 < priority < 6:
             rospy.loginfo("Unknown priority for speaking text. Using default priority = %s", self.default_priority)
             priority = self.default_priority
         return priority
 
 if __name__ == '__main__':
     try:
-        rospy.init_node('speaker')
-        speaker = Speaker()
+        rospy.init_node('sol_hub')
+        sol_hub = SOLHub()
     except rospy.ROSInterruptException:
         pass
 
