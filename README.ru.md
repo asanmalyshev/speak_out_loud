@@ -78,7 +78,6 @@ roslaunch speak_out_loud speak_out_loud.launch
 | Параметр | Описание | Значения | Значения по умолчания
 | --- | --- | --- | ---
 | ___output___ | Вывод log-файлов | screen/log | screen 
-| ___language___ | используемый язык | ru/en | ru 
 | ___default_voice___ | используемый голос по умолчанию | некоторые: elena/aleksndr | elena 
 | ___whitelist___ | whitelist узлов | список значений | [ ] 
 | ___blacklist___ | blacklist узлов | список значений | [ ] 
@@ -151,12 +150,12 @@ ___speak_out_loud_hub_node___
 ___Подписки___
 | Топик | Тип | Описание 
 | --- | --- | --- 
-___speak_out_loud_texts___ | ([speak_out_loud/SpeakGoal](action/Speak.action)) | топик для сообщений
-___speak_out_loud_texts_debug___ | ([speak_out_loud/SpeakGoal](action/Speak.action)) | топик для отладочных сообщений
-___speak_out_loud_whitelist___ | ([std_msgs/String](http://docs.ros.org/en/api/std_msgs/html/msg/String.html)) | топик для добавления узлов в whitelist
-___speak_out_loud_blacklist___ | ([std_msgs/String](http://docs.ros.org/en/api/std_msgs/html/msg/String.html)) | топик для добавления узлов в blacklist
-___speak_out_loud_whitelist_on___ | ([std_msgs/Bool](http://docs.ros.org/en/api/std_msgs/html/msg/Bool.html)) | топик для включения/выключения whitelist 
-___speak_out_loud_blacklist_on___ | ([std_msgs/Bool](http://docs.ros.org/en/api/std_msgs/html/msg/Bool.html)) | топик для включения/выключения blacklist
+___sol/texts___ | ([speak_out_loud/SpeakGoal](action/Speak.action)) | топик для сообщений
+___sol/texts_debug___ | ([speak_out_loud/SpeakGoal](action/Speak.action)) | топик для отладочных сообщений
+___sol/whitelist___ | ([std_msgs/String](http://docs.ros.org/en/api/std_msgs/html/msg/String.html)) | топик для добавления узлов в whitelist
+___sol/blacklist___ | ([std_msgs/String](http://docs.ros.org/en/api/std_msgs/html/msg/String.html)) | топик для добавления узлов в blacklist
+___sol/whitelist_on___ | ([std_msgs/Bool](http://docs.ros.org/en/api/std_msgs/html/msg/Bool.html)) | топик для включения/выключения whitelist 
+___sol/blacklist_on___ | ([std_msgs/Bool](http://docs.ros.org/en/api/std_msgs/html/msg/Bool.html)) | топик для включения/выключения blacklist
 
 
 ## Интерфейс взаимодействия клиента и сервера
@@ -165,6 +164,7 @@ ___speak_out_loud_blacklist_on___ | ([std_msgs/Bool](http://docs.ros.org/en/api/
 # goal
 string  sender_node   # sender node name 
 string  text          # text to read
+string  voice          # voice to speak with
 uint8    priority     # priority of text
 ---
 # result
@@ -175,6 +175,7 @@ string message        # feedback of operation (not used in current version)
 ```
 Поля из Goal заполняются на пользовательской стороне.
 - ___text___ содержит текст для воспроизведения __*)__;
+- ___voice___ - голос для воспроизведения. Если не задан, то используется голос по умолчанию;
 - ___priority___ - приоритет, число в диапазоне [1,5]. Для удобства эти значения связаны с константами, описанными в [msg/Priority.msg](msg/Priority.msg). Правила приоритизации описаны в [Приоритеты сообщений](#приоритеты-сообщений). Значение по умолчанию: Priority.TEXT;
 - ___sender_node___ - имя узла-отправителя. Поле заполняется вручную. Не должно быть пустым, если используются whitelist/blacklist. По умолчанию поле пустое. 
 > ___*)___ - обязательные поля

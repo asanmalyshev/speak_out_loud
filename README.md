@@ -77,7 +77,6 @@ Some parameters are available to configure launch.
 | Param | Description | Values | Default 
 | --- | --- | --- | ---
 | ___output___ | direct logs output | screen/log | screen 
-| ___language___ | language to be used (define voices choice) | ru/en | ru 
 | ___default_voice___ | default voice | some voices: elena/aleksndr | elena 
 | ___whitelist___ | whitelist of nodes to be spoken | list of values | [ ] 
 | ___blacklist___ | blacklist of nodes not to be spoken | list of values | [ ] 
@@ -145,12 +144,12 @@ Doesn't have any subscriptions or publications.
 ___Subscribed topics___
 | Topic | Type | Description 
 | --- | --- | --- 
-___speak_out_loud_texts___ | ([speak_out_loud/SpeakGoal](action/Speak.action)) | topic with messages to sound 
-___speak_out_loud_texts_debug___ | ([speak_out_loud/SpeakGoal](action/Speak.action)) | topic with messages to sound for debugging
-___speak_out_loud_whitelist___ | ([std_msgs/String](http://docs.ros.org/en/api/std_msgs/html/msg/String.html)) | send topic names to append to whitelist
-___speak_out_loud_blacklist___ | ([std_msgs/String](http://docs.ros.org/en/api/std_msgs/html/msg/String.html)) | send topic names to append to blacklist
-___speak_out_loud_whitelist_on___ | ([std_msgs/Bool](http://docs.ros.org/en/api/std_msgs/html/msg/Bool.html)) | send bool value to turn on/off whitelist 
-___speak_out_loud_blacklist_on___ | ([std_msgs/Bool](http://docs.ros.org/en/api/std_msgs/html/msg/Bool.html)) | send bool value to turn on/off blacklist
+___sol/texts___ | ([speak_out_loud/SpeakGoal](action/Speak.action)) | topic with messages to sound 
+___sol/texts_debug___ | ([speak_out_loud/SpeakGoal](action/Speak.action)) | topic with messages to sound for debugging
+___sol/whitelist___ | ([std_msgs/String](http://docs.ros.org/en/api/std_msgs/html/msg/String.html)) | send topic names to append to whitelist
+___sol/blacklist___ | ([std_msgs/String](http://docs.ros.org/en/api/std_msgs/html/msg/String.html)) | send topic names to append to blacklist
+___sol/whitelist_on___ | ([std_msgs/Bool](http://docs.ros.org/en/api/std_msgs/html/msg/Bool.html)) | send bool value to turn on/off whitelist 
+___sol/blacklist_on___ | ([std_msgs/Bool](http://docs.ros.org/en/api/std_msgs/html/msg/Bool.html)) | send bool value to turn on/off blacklist
 
 ## Client-server interface
 Clients communicate with server over [action/Speak.action](action/Speak.action).
@@ -158,6 +157,7 @@ Clients communicate with server over [action/Speak.action](action/Speak.action).
 # goal
 string  sender_node   # sender node name 
 string  text          # text to read
+string  voice          # voice to speak with
 uint8    priority     # priority of text
 ---
 # result
@@ -168,6 +168,7 @@ string message        # feedback of operation (not used in current version)
 ```
 Goal section is filled in user node which sends data.
 - ___text___ contains text to be spoken __*)__;
+- ___voice___ voice to speak with. If not set, the default voice is used;
 - ___priority___ is a number [1,5]. For convenience these values are associated with constants in [msg/Priority.msg](msg/Priority.msg). Prioritization rules are explaned in [Messages priorities](#messages-priorities) section. Default value: Priority.TEXT;
 - ___sender_node___ contains node names data came from. This value is filled manually.
 It shouldn't be empty if you use whitelist/blacklist. By default it is empty. 
