@@ -1,18 +1,19 @@
 # CHANGELOG FILE
 
+## v2.0.0 (2022.01.25)
+___One node, whole pythonic version.___
+___Old functionality restored___
+
+### Added
+  - launch flag to switch between one topic and whole action interface version.
+### Changed
+  - nodes names in more convenient way;
+  - black-whilelists works over service;
+  - extended message format.
 
 ## v1.1.0 (2021.09.15)
 ### Added
-  - action interface for texts to say.
-### Changed
-  - code refactoring: everything is on py3;
-  - black-whilelists works over service.
-
-## v1.1.0 (2021.09.04)
-
-### Added
   - in launch file there's a param to change default voice. Voices must be installed (see installation section);
-  - /do_i_say topic: whether something is saying or not.
 ### Changed
   - now there's only one default voice for all message priorities - female one;
   - multithread mode is used;
@@ -21,7 +22,13 @@
 
 ---
 
+## v1.0.1 (2021.09.04)
+### Added
+  - /do_i_say topic: whether something is saying or not.
+
+---
+
 ## v1.0.0 (2021.05.27)
-Init package version.
-Basic functions
+___Init package version___
+___Basic functions___
 

@@ -72,7 +72,7 @@ ${Boost_INCLUDE_DIRS}
 ## Install ##
 #############
 
-catkin_install_python(PROGRAMS scripts/sol_server.py scripts/speak_out_loud_client_example_node.py examples/turtlesim/speak_out_loud_turtle_sim.py
+catkin_install_python(PROGRAMS scripts/sol_server.py examples/simple_client/sol_simple_client.py examples/turtlesim/speak_out_loud_turtle_sim.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

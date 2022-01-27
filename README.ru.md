@@ -19,13 +19,13 @@ speak_out_loud - ROS пакет для генерации речи из текс
 
 Пакет основан на генераторе речи RHVoice и высокоуровневом аудио интерфейсе Speech Dispatcher.
 
-Чтобы что-то сказать, достаточно отправить текст, упакованный в сообщение типа SpeakGoal, в топик *speak_out_loud_texts*.
+Чтобы что-то сказать, достаточно отправить текст, упакованный в сообщение типа SpeakGoal, в топик *sol/texts*.
 
 Продвинутое управление воспроизведением включает в себя:
 * приоритеты, которые позволяют задавать очерёдность воспроизведения сообщений;
 * whitelist  - список узлов, с которых воспроизводятся тексты, и только с них; 
 * blacklist  - список узлов, воспроизведение с которых блокируется;
-* узел debug для воспроизведения при необходимости дополнительной информации.
+* режим debug для воспроизведения дополнительной информации.
 
 Автор:  Александр Малышев <asanmalyshev AT gmail DOT com>               
 Youtube видео с некоторыми примерами (на русском): https://youtu.be/uVPauu7p71E
@@ -81,7 +81,8 @@ roslaunch speak_out_loud speak_out_loud.launch
 | ___default_voice___ | используемый голос по умолчанию | некоторые: elena/aleksndr | elena 
 | ___whitelist___ | whitelist узлов | список значений | [ ] 
 | ___blacklist___ | blacklist узлов | список значений | [ ] 
-| ___debug___ | использование отладочного топика | True/False | False
+| ___debug___ | использование отладочного режима | True/False | False
+| ___use_action_interface___ | использование action-интерфейса| True/False | False
 
 Полный список голосов (при условии скачивания соответствующих пакетов) можно найти [тут](https://github.com/RHVoice/RHVoice/wiki/Latest-version).
 
@@ -116,9 +117,7 @@ roslaunch speak_out_loud speak_out_loud.launch
 
 ### Через Bash
 ```shell
-rostopic pub /speak_out_loud_texts speak_out_loud/SpeakGoal "sender_node: ''
-text: 'Карл у Клары... ну вы знаете'
-priority: 0"
+rostopic pub /sol/texts speak_out_loud/SpeakGoal "{sender_node: '', text: 'Привет', voice: '', priority: 1, debug: false}"
 ```
 
 ### Launch-файл
@@ -131,31 +130,28 @@ roslaunch speak_out_loud speak_out_loud_client_example.launch
 | --- | --- | --- | ---
 | ___output___ | Вывод log-файлов | screen/log | screen 
 | ___node_name___ | Имя узла |  | speak_out_loud_client
-| ___debug___ | использование отладочного топика | True/False | False
+<!-- | ___debug___ | использование отладочного топика | True/False | False -->
 
 
 ## Узлы
-___speak_out_loud_srv___
-сервер для озвучивания. Получает тексты с назначенными приоритетами.
-
-___speak_out_loud_hub_node___
-узел для сбора текстов из различных узлов и перенаправляет их на speak_out_loud_srv.
-
+___/sol/sol_server____
+Сервер озвучивания текстов. Получает тексты и возпроизводит их.
 
 ## Топики
-### Speak_out_loud_srv
-Подписок не имеет, публикаций не ведёт.
+___Публикации___
+| Топик | Тип | Описание 
+| --- | --- | --- 
+___sol/do_i_say___ | ([std_msgs/Bool](http://docs.ros.org/en/api/std_msgs/html/msg/Bool.html)) | True, если какой-то текст будет проговариваться, False когда, проговаривание текста закончено 
 
-### Speak_out_loud_hub_node
 ___Подписки___
 | Топик | Тип | Описание 
 | --- | --- | --- 
 ___sol/texts___ | ([speak_out_loud/SpeakGoal](action/Speak.action)) | топик для сообщений
-___sol/texts_debug___ | ([speak_out_loud/SpeakGoal](action/Speak.action)) | топик для отладочных сообщений
-___sol/whitelist___ | ([std_msgs/String](http://docs.ros.org/en/api/std_msgs/html/msg/String.html)) | топик для добавления узлов в whitelist
-___sol/blacklist___ | ([std_msgs/String](http://docs.ros.org/en/api/std_msgs/html/msg/String.html)) | топик для добавления узлов в blacklist
-___sol/whitelist_on___ | ([std_msgs/Bool](http://docs.ros.org/en/api/std_msgs/html/msg/Bool.html)) | топик для включения/выключения whitelist 
-___sol/blacklist_on___ | ([std_msgs/Bool](http://docs.ros.org/en/api/std_msgs/html/msg/Bool.html)) | топик для включения/выключения blacklist
+___/sol/action_iface/goal___ | ([speak_out_loud/SpeakGoal](action/Speak.action)) | Если ипользуется Action интерфейс: топик цели
+___/sol/action_iface/cancel___ | ([actionlib_msgs/GoalID](http://docs.ros.org/en/api/actionlib_msgs/html/msg/GoalID.html)) | Если ипользуется Action интерфейс: топик отмены 
+___/sol/action_iface/feedback___ | ([speak_out_loud/SpeakFeedback](action/Speak.action)) | Если ипользуется Action интерфейс: топик обратной связи
+___/sol/action_iface/result___ | ([speak_out_loud/SpeakResult](action/Speak.action)) | Если ипользуется Action интерфейс: топик результата
+___/sol/action_iface/status___ | ([actionlib_msgs/GoalStatusArray](http://docs.ros.org/en/api/actionlib_msgs/html/msg/GoalStatusArray.html)) | Если ипользуется Action интерфейс: топик статуса
 
 
 ## Интерфейс взаимодействия клиента и сервера
@@ -246,13 +242,34 @@ string message        # feedback of operation (not used in current version)
 ## Настраивание узлов
 
 ### Режим отладки
-Для отладки используется специальный топик _speak_out_loud_texts_debug_. Приходящие в него тексты воспроизводятся только если сервер запущен с параметром _debug=True_.
+Для отладки используется специальное поле debug в SpeakGoal. При выключенном режиме отладки, сообщения со значением True в поле debug игнорируются. Они воспроизводятся только если сервер запущен с параметром _debug=True_.
 
 ###  Фильтрация
-Для уменьшения количества топиков, от которых приходят тексты для прочтения, используются параметры whitelist и blacklist.
-Оба списка работают только с топиком _speak_out_loud_texts_. 
+Для уменьшения количества топиков, от которых приходят тексты для прочтения, используются launch параметры whitelist и blacklist.
 Whitelist имеет приоритет выше. Это значит, что если оба фильтрующих списка определены, данные фильтруются только whitelist.
 По умолчанию, оба списка пустые, обрабатываются все входящие сообщения.
+Обоими списками фильтрации можно управлять через ros сервисы /sol/whitelist_control и /sol/blacklist_control, оба имеющих тип [speak_out_loud/SpeakFilter](srv/SpeakFilter).
+```
+string name     # name to operate
+bool operation  # operation
+---
+string[] nameslist   # current list
+bool    status       # True - filtering is on, False - filtering is off
+```
+_Запрос_
+| Поле | Тип | Описание 
+| --- | --- | --- 
+___name___ | ([std_msgs/String](http://docs.ros.org/en/api/std_msgs/html/msg/String.html)) | имя фильтруемого узла
+___operation___ | ([std_msgs/Bool](http://docs.ros.org/en/api/std_msgs/html/msg/Bool.html)) | True - добавить в список, False - удалить из списка
+
+_Ответ_
+| Поле | Тип | Описание 
+| --- | --- | --- 
+___nameslist___ | ([std_msgs/String](http://docs.ros.org/en/api/std_msgs/html/msg/String.html)[]) | текущий список
+___status___ | ([std_msgs/Bool](http://docs.ros.org/en/api/std_msgs/html/msg/Bool.html)) | True - фильтрация включена, False - фильтрация выключена
+
+Пользователю необходимо отправить запрос с name='' и operation=True если фильтрацию нужно включить, operation=False - если выключить.
+Отправка непустого поля name добавляет (operation=True) или удаляет (operation=False) топик из списка фильтрации.
 
 Если __whitelist__ содержит элементы, проверяется есть ли имя отправителя (просматривается поле в сообщении) в списке, и если есть, то __перенаправляет сообщение на сервер,__ в противном случае сообщение __игнорируется__.
 ```xml

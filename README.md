@@ -19,13 +19,13 @@ speak_out_loud - ROS package to generate speech from text, that supports russian
 
 Package is based on voice generator RHVoice and high level audio interface for speech synthesis Speech Dispatcher.
 
-To say text just send it packed into message of SpeakGoal type in topic *speak_out_loud_texts*.
+To say text just send it packed into message of SpeakGoal type in topic *sol/texts*.
 
 Advanced speech control includes:
 * priorities, which allows to proiritize one messages over anothers;
 * whitelist to allow only a few nodes to speak;
 * blacklist to block messages from some nodes;
-* debug topic to provide extra information (if reqired).
+* debug mode to provide extra information (if reqired).
 
 Author:  Alexander Malyshev <asanmalyshev AT gmail DOT com>               
 Youtube video with some examples (in Russian): https://youtu.be/uVPauu7p71E
@@ -80,7 +80,8 @@ Some parameters are available to configure launch.
 | ___default_voice___ | default voice | some voices: elena/aleksndr | elena 
 | ___whitelist___ | whitelist of nodes to be spoken | list of values | [ ] 
 | ___blacklist___ | blacklist of nodes not to be spoken | list of values | [ ] 
-| ___debug___ | use debug sound output | True/False | False
+| ___debug___ | use debug mode | True/False | False
+| ___use_action_interface___ | use action interface | True/False | False 
 
 Full list of available voices might be found [here](https://github.com/RHVoice/RHVoice/wiki/Latest-version).
 
@@ -111,9 +112,7 @@ There're two ways to test the package:
 
 ### Bash way
 ```shell
-rostopic pub /speak_out_loud_texts speak_out_loud/SpeakGoal "sender_node: ''
-text: 'Карл у Клары... ну вы знаете'
-priority: 0"
+rostopic pub /sol/texts speak_out_loud/SpeakGoal "{sender_node: '', text: 'Привет', voice: '', priority: 1, debug: false}"
 ```
 
 ### Example node way
@@ -126,30 +125,31 @@ Type some words to say and type priority.
 | --- | --- | --- | ---
 | ___output___ | direct logs output | screen/log | screen 
 | ___node_name___ | name of node |  | speak_out_loud_client
-| ___debug___ | publish texts in debug topic | True/False | False
+
+<!-- | ___debug___ | publish texts in debug topic | True/False | False -->
 
 
 ## Nodes
-___speak_out_loud_srv___
-is an action server to speak text. It gets texts with priorities and works them out.
+___/sol/sol_server____
 
-___speak_out_loud_hub_node___
-is a node to collect texts from different nodes and forward them on speak_out_loud server.
+Speak out loud server. It gets texts with priorities and works them out.
 
 ## Topics
-### Speak_out_loud_srv
-Doesn't have any subscriptions or publications.
+___Published topics___
+| Topic | Type | Description 
+| --- | --- | --- 
+___sol/do_i_say___ | ([std_msgs/Bool](http://docs.ros.org/en/api/std_msgs/html/msg/Bool.html)) | send True if something is going to be said, False if server ends speech
 
-### Speak_out_loud_hub_node
 ___Subscribed topics___
 | Topic | Type | Description 
 | --- | --- | --- 
-___sol/texts___ | ([speak_out_loud/SpeakGoal](action/Speak.action)) | topic with messages to sound 
-___sol/texts_debug___ | ([speak_out_loud/SpeakGoal](action/Speak.action)) | topic with messages to sound for debugging
-___sol/whitelist___ | ([std_msgs/String](http://docs.ros.org/en/api/std_msgs/html/msg/String.html)) | send topic names to append to whitelist
-___sol/blacklist___ | ([std_msgs/String](http://docs.ros.org/en/api/std_msgs/html/msg/String.html)) | send topic names to append to blacklist
-___sol/whitelist_on___ | ([std_msgs/Bool](http://docs.ros.org/en/api/std_msgs/html/msg/Bool.html)) | send bool value to turn on/off whitelist 
-___sol/blacklist_on___ | ([std_msgs/Bool](http://docs.ros.org/en/api/std_msgs/html/msg/Bool.html)) | send bool value to turn on/off blacklist
+___sol/texts___ | ([speak_out_loud/SpeakGoal](action/Speak.action)) | topic for messages to sound 
+___/sol/action_iface/goal___ | ([speak_out_loud/SpeakGoal](action/Speak.action)) | if action interface is on: goal topic 
+___/sol/action_iface/cancel___ | ([actionlib_msgs/GoalID](http://docs.ros.org/en/api/actionlib_msgs/html/msg/GoalID.html)) | if action interface is on: cancelation topic
+___/sol/action_iface/feedback___ | ([speak_out_loud/SpeakFeedback](action/Speak.action)) | if action interface is on: feedback topic
+___/sol/action_iface/result___ | ([speak_out_loud/SpeakResult](action/Speak.action)) | if action interface is on: result topic
+___/sol/action_iface/status___ | ([actionlib_msgs/GoalStatusArray](http://docs.ros.org/en/api/actionlib_msgs/html/msg/GoalStatusArray.html)) | if action interface is on: status topic
+
 
 ## Client-server interface
 Clients communicate with server over [action/Speak.action](action/Speak.action).
@@ -239,14 +239,35 @@ In following cases "text" means text value of income message.
 ## Tuning nodes to be spoken
 
 ### Debug mode
-There's a special topic _speak_out_loud_texts_debug_ for debugging. Texts from it are proccessed only if launch parameter ___debug___=True.
+For debuggin there's a special field debug in SpeakGoal message. When debug mode is off, all messages with True value of debug field are ignored. Texts with debug=True are proccessed only if launch parameter ___debug___=True.
 
 ###  Filtering
-To narrow list of nodes down, whose texts should be read, whitelist and blacklist params are used.
-Both lists work only with topic _speak_out_loud_texts_. 
+To narrow list of nodes down, whose texts should be read, whitelist and blacklist are used.
 Whitelist has priority over blacklist. 
 It means, if they are both defined, only whitelist is used.
-By default, both lists are empty and hub processes all messages.
+By default, both lists are empty and server processes all messages.
+Both lists are organized over ros services /sol/whitelist_control and /sol/blacklist_control of same [speak_out_loud/SpeakFilter](srv/SpeakFilter) type.
+```
+string name     # name to operate
+bool operation  # operation
+---
+string[] nameslist   # current list
+bool    status       # True - filtering is on, False - filtering is off
+```
+_Request_
+| Field | Type | Description 
+| --- | --- | --- 
+___name___ | ([std_msgs/String](http://docs.ros.org/en/api/std_msgs/html/msg/String.html)) | name to operate
+___operation___ | ([std_msgs/Bool](http://docs.ros.org/en/api/std_msgs/html/msg/Bool.html)) | True - add name in list, False - exclude from list 
+
+_Response_
+| Field | Type | Description 
+| --- | --- | --- 
+___nameslist___ | ([std_msgs/String](http://docs.ros.org/en/api/std_msgs/html/msg/String.html)[]) | current list
+___status___ | ([std_msgs/Bool](http://docs.ros.org/en/api/std_msgs/html/msg/Bool.html)) | True - filtering is on, False - filtering is off
+
+To turn on/off filtering by any list, user should send request with name='' and operation=True if filtering sould be on or operation=False if filtering sould be off.
+Send not empty name to add (operation=True) or remove (operation=False) it from filtering list.
 
 If __whitelist__ has elements, hub checks if incoming messages are from that list and __forward them on server, otherwise__ messages are __ignored__.
 ```xml

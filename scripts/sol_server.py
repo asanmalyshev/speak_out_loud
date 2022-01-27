@@ -17,7 +17,7 @@ class SOLServer(object) :
 
     def __init__(self):
         self.load_params()
-        self.do_i_say_pub = rospy.Publisher("/sol/do_i_say", Bool, queue_size=1)
+        self.do_i_say_pub = rospy.Publisher("do_i_say", Bool, queue_size=1)
 
         self._client = speechd.SSIPClient('sol_ssip_client')
         self._client.set_output_module('rhvoice')
@@ -34,7 +34,7 @@ class SOLServer(object) :
                     auto_start=False)
             self.server_sol.start()
         else:
-            rospy.Subscriber("/sol/texts", SpeakGoal, self.speak_task_cb)
+            rospy.Subscriber("texts", SpeakGoal, self.speak_task_cb)
 
         rospy.Service('whitelist_control', SpeakFilter, self.whitelist_control)
         rospy.Service('blacklist_control', SpeakFilter, self.blacklist_control)

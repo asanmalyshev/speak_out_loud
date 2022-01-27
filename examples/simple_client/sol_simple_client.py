@@ -20,7 +20,7 @@ class Client(object) :
         self.goal.priority = self.default_priority
         self.load_params()
         self._pub = rospy.Publisher("/sol/texts", SpeakGoal, queue_size=1)
-        self._pub_debug = rospy.Publisher("/sol/texts_debug", SpeakGoal, queue_size=1)
+        # self._pub_debug = rospy.Publisher("/sol/texts_debug", SpeakGoal, queue_size=1)
         rospy.on_shutdown(self.shutdown)
         # rospy.spin()
 
@@ -57,7 +57,8 @@ class Client(object) :
                     if self.debug_mode:
                         self._pub_debug.publish(self.goal)
                     else:
-                        self._pub.publish(self.goal)
+                        if self.goal.debug and self.debug_mode or not (self.goal.debug and self.debug_mode): 
+                            self._pub.publish(self.goal)
                 else:
                     rospy.logerr("No text provided, message won't be send")
 

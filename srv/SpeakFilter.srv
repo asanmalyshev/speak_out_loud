@@ -1,5 +1,5 @@
-string name
-bool operation
+string name     # name to operate
+bool operation  # operation
 ---
-string[] nameslist
-bool    status
+string[] nameslist   # current list
+bool    status       # True - filtering is on, False - filtering is off
