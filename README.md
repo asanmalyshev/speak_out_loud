@@ -49,7 +49,7 @@ Add another language installing package rhvoice-*language_name*. See all availab
 
 ### Speech dispatcher
 ```shell
-sudo apt install speech-dispatcher speech-dispatcher-rhvoice speech-dispatcher-audio-plugins libspeechd-dev 
+sudo apt install speech-dispatcher speech-dispatcher-rhvoice speech-dispatcher-audio-plugins libspeechd-dev python3-speechd
 ```
 
 ### Package speak_out_loud

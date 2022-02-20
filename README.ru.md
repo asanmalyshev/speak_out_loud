@@ -50,7 +50,7 @@ sudo apt-get install rhvoice rhvoice-english rhvoice-russian
 
 ### Speech dispatcher
 ```shell
-sudo apt install speech-dispatcher speech-dispatcher-rhvoice speech-dispatcher-audio-plugins libspeechd-dev 
+sudo apt install speech-dispatcher speech-dispatcher-rhvoice speech-dispatcher-audio-plugins libspeechd-dev python3-speechd
 ```
 
 ### Пакет speak_out_loud
