@@ -14,6 +14,20 @@
 
 *[TESTING scenarios](TESTS.md)*
 
+## Cite
+
+### Repository
+```bibtex
+@misc{speak_out_loud,
+ author = {Malyshev, Alexander},
+ booktitle = {GitHub repository},
+ publisher = {GitHub},
+ title = {{Speak out loud}},
+ url = {https://github.com/asanmalyshev/speak_out_loud},
+ year = {2020}
+}
+```
+
 ## Description
 speak_out_loud - ROS package to generate speech from text, that supports russian language.
 
