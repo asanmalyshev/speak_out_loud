@@ -5,6 +5,7 @@ import rospy
 import actionlib
 import sys
 import speechd
+import signal
 
 from speak_out_loud.msg import SpeakGoal, SpeakAction, SpeakFeedback, SpeakResult, Priority
 from speak_out_loud.srv import SpeakFilter, SpeakFilterResponse
@@ -39,6 +40,10 @@ class SOLServer(object) :
         rospy.Service('whitelist_control', SpeakFilter, self.whitelist_control)
         rospy.Service('blacklist_control', SpeakFilter, self.blacklist_control)
         rospy.loginfo('SOL server is started')
+        # signal.signal(signal.SIGINT, self.shutdown)
+        # signal.signal(signal.SIGTERM, self.shutdown)
+        # signal.signal(signal.SIGKILL, self.shutdown)
+        rospy.on_shutdown(self.shutdown)
 
     def whitelist_control(self, req):
         response = SpeakFilterResponse()
@@ -246,7 +251,7 @@ class SOLServer(object) :
         msg_id = int(spd_result[2][0])
         return msg_id
 
-    def shutdown(self):
+    def shutdown(self, *args):
         rospy.logwarn("SOL is closed")
         self._client.close()
 
@@ -255,6 +260,7 @@ if __name__ == '__main__':
         rospy.init_node('SOL')
         rospy.logwarn("Press Ctrl+C to shutdown node")
         solserver = SOLServer()
+        rospy.spin()
 
     except rospy.ROSInterruptException:
         pass
