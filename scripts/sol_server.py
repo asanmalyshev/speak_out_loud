@@ -31,7 +31,7 @@ class SOLServer(object) :
         if self.use_action_interface:
             self.server_sol = actionlib.ActionServer('action_iface', SpeakAction, 
                     goal_cb=self.speak_action_srv_task_cb,
-                    # cancel_cb=self.speak_action_srv_task_cancelation_cb, 
+                    cancel_cb=self.speak_action_srv_task_cancelation_cb, 
                     auto_start=False)
             self.server_sol.start()
         else:
@@ -159,8 +159,8 @@ class SOLServer(object) :
                     rospy.loginfo("Node %s is in blacklist. Text won't be read out loud", goal.sender_node)
 
 
-    # def speak_action_srv_task_cancelation_cb(self, req):
-    #     self._client.cancel(speechd.Scope.ALL)
+    def speak_action_srv_task_cancelation_cb(self, req):
+        self._client.cancel(speechd.Scope.ALL)
 
     def fix_priority(self, priority):
         if not Priority.MIN < priority < Priority.MAX:
