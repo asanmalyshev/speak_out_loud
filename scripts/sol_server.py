@@ -220,6 +220,7 @@ class SOLServer(object) :
                 req.set_succeeded(result_msg)
                 self.do_i_say_pub.publish(Bool(False))
             elif callback_type == speechd.CallbackType.CANCEL:
+                self.do_i_say_pub.publish(Bool(False))
                 result_msg.msg_id = int(msg_id)
                 req.set_canceled(result_msg)
         spd_result = self._client.speak(goal.text, callback=callback,
