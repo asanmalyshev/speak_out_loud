@@ -160,7 +160,8 @@ class SOLServer(object) :
 
 
     def speak_action_srv_task_cancelation_cb(self, req):
-        self._client.cancel(speechd.Scope.ALL)
+        # self._client.cancel(speechd.Scope.ALL)
+        self._client.stop()
 
     def fix_priority(self, priority):
         if not Priority.MIN < priority < Priority.MAX:
