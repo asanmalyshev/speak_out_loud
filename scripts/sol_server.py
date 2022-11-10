@@ -206,28 +206,44 @@ class SOLServer(object) :
     def srv_spd_say(self, priority, req, goal):
         msg_id = -1
         result_msg = SpeakResult()
+        feedback_msg = SpeakFeedback()
+        feedback_msg.msg = goal.text
         self._client.set_synthesis_voice(self.defaut_voice)
         self._client.set_priority(priority)
         if goal.voice=='':
             self._client.set_synthesis_voice(self.defaut_voice)
         else:
             self._client.set_synthesis_voice(goal.voice)
-        def callback(callback_type):
+        def callback(callback_type, **kwargs):
             result_msg = SpeakResult()
             if callback_type == speechd.CallbackType.BEGIN:
                 self.do_i_say_pub.publish(Bool(True))
             elif callback_type == speechd.CallbackType.END:
+                # feedback_msg.mark = ''
                 result_msg.msg_id = int(msg_id)
                 req.set_succeeded(result_msg)
                 self.do_i_say_pub.publish(Bool(False))
             elif callback_type == speechd.CallbackType.CANCEL:
+                # feedback_msg.mark = ''
                 self.do_i_say_pub.publish(Bool(False))
                 result_msg.msg_id = int(msg_id)
                 req.set_canceled(result_msg)
+            elif callback_type == speechd.CallbackType.INDEX_MARK:
+                feedback_msg.mark = kwargs['index_mark']
+                rospy.logwarn(kwargs['index_mark'])
+
+        rospy.loginfo(goal.text)
+        self._client.set_data_mode(speechd.DataMode.TEXT)
+        if goal.use_ssml:
+            self._client.set_data_mode(speechd.DataMode.SSML)
+
+        # goal.text = '<speak>Hello, <mark name=\"mark1\"/> how does it work?</speak>'
+        # rospy.loginfo(goal.text)
         spd_result = self._client.speak(goal.text, callback=callback,
                            event_types=(speechd.CallbackType.BEGIN,
                                         speechd.CallbackType.CANCEL,
-                                        speechd.CallbackType.END))
+                                        speechd.CallbackType.END,
+                                        speechd.CallbackType.INDEX_MARK))
         msg_id = int(spd_result[2][0])
         return msg_id
 
@@ -245,7 +261,7 @@ class SOLServer(object) :
             elif callback_type == speechd.CallbackType.END:
                 self.do_i_say_pub.publish(Bool(False))
             elif callback_type == speechd.CallbackType.CANCEL:
-                pass
+                self.do_i_say_pub.publish(Bool(False))
         spd_result = self._client.speak(msg.text, callback=callback,
                            event_types=(speechd.CallbackType.BEGIN,
                                         speechd.CallbackType.CANCEL,

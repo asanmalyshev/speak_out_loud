@@ -1,9 +1,10 @@
 # goal
 string  sender_node   # sender node name 
 string  text          # text to read
-string  voice          # voice to speak with
+string  voice         # voice to speak with
 uint8    priority     # priority of text
 bool    debug         # debug message
+bool    use_ssml      # use ssml markup
 ---
 # result
 int32 msg_id          # id of queued message
@@ -17,6 +18,7 @@ uint8 PROGRESS      = 5
 int32 msg_id          # id of queued message
 uint8 msg_status      # status of queued message
 string msg            # msg to say
+string mark           # mark name
 uint8 SPD_BEGIN       = 1
 uint8 SPD_END         = 2
 uint8 SPD_INDEX_MARKS = 3
