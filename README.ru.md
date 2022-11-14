@@ -15,7 +15,7 @@
 *[Тестовые сценарии](TESTS.md)*
 
 ## Описание
-speak_out_loud - ROS пакет для генерации речи из текста, который поддерживает русский язык.
+speak_out_loud (SoL) - ROS пакет для генерации речи из текста, который поддерживает русский язык.
 
 Пакет основан на генераторе речи RHVoice и высокоуровневом аудио интерфейсе Speech Dispatcher.
 
@@ -23,8 +23,8 @@ speak_out_loud - ROS пакет для генерации речи из текс
 
 Продвинутое управление воспроизведением включает в себя:
 * приоритеты, которые позволяют задавать очерёдность воспроизведения сообщений;
-* whitelist  - список узлов, с которых воспроизводятся тексты, и только с них; 
-* blacklist  - список узлов, воспроизведение с которых блокируется;
+* whitelist  - список узлов, от которых воспроизводятся тексты, и только от них; 
+* blacklist  - список узлов, воспроизведение от которых блокируется;
 * режим debug для воспроизведения дополнительной информации.
 
 Автор:  Александр Малышев <asanmalyshev AT gmail DOT com>               
@@ -101,7 +101,7 @@ roslaunch speak_out_loud speak_out_loud.launch
 
 ### Текст произносится не до конца
 Speech dispatcher по умолчанию выключается по истечении некотрого времени после отключения последнего клиента.
-Так как speak_out_loud сервер после отправки текста отключается от speech dispatcher, возможна потеря части произносимого текста.
+Так как SoL сервер после отправки текста отключается от speech dispatcher, возможна потеря части произносимого текста.
 Чтобы избежать подобных ситуаций, необходимо поправить конфигурационный файл `/etc/speech-dispatcher/speechd.conf`:
 Найдите параметр `Timeout`, раскоментируйте его и измените количество секунд, которое speech dispatcher будет ждать после отключения клиента, или же установите значение параметра =0, чтобы снять ограничение на время ожидания. 
 
@@ -160,20 +160,38 @@ ___/sol/action_iface/status___ | ([actionlib_msgs/GoalStatusArray](http://docs.r
 # goal
 string  sender_node   # sender node name 
 string  text          # text to read
-string  voice          # voice to speak with
-uint8    priority     # priority of text
+string  voice         # voice to speak with
+uint8   priority      # priority of text
+bool    debug         # debug message
+bool    use_ssml      # use ssml markup
 ---
 # result
-uint8 success         # result of reading text (not used in current version) 
+uint8 smsg_id         # result of reading text (not used in current version) 
+uint8 IMPORTANT     = 1
+uint8 MESSAGE       = 2
+uint8 TEXT          = 3
+uint8 NOTIFICATION  = 4
+uint8 PROGRESS      = 5
 ---
 # feedback
-string message        # feedback of operation (not used in current version)
+int32 msg_id          # id of queued message
+uint8 msg_status      # status of queued message
+string msg            # msg to say
+string mark           # mark name
+uint8 SPD_BEGIN       = 1
+uint8 SPD_END         = 2
+uint8 SPD_INDEX_MARKS = 3
+uint8 SPD_CANCEL      = 4
+uint8 SPD_PAUSE       = 5
+uint8 SPD_RESUME      = 6
 ```
 Поля из Goal заполняются на пользовательской стороне.
+- ___sender_node___ - имя узла-отправителя. Поле заполняется вручную. Не должно быть пустым, если используются whitelist/blacklist. По умолчанию поле пустое. 
 - ___text___ содержит текст для воспроизведения __*)__;
 - ___voice___ - голос для воспроизведения. Если не задан, то используется голос по умолчанию;
 - ___priority___ - приоритет, число в диапазоне [1,5]. Для удобства эти значения связаны с константами, описанными в [msg/Priority.msg](msg/Priority.msg). Правила приоритизации описаны в [Приоритеты сообщений](#приоритеты-сообщений). Значение по умолчанию: Priority.TEXT;
-- ___sender_node___ - имя узла-отправителя. Поле заполняется вручную. Не должно быть пустым, если используются whitelist/blacklist. По умолчанию поле пустое. 
+- ___debug___ - сообщение, побликуемое в режиме debug;
+- ___use_ssml___ - использовать разметку ssml;
 > ___*)___ - обязательные поля
 
 ## Приоритеты сообщений
@@ -299,6 +317,20 @@ ___status___ | ([std_msgs/Bool](http://docs.ros.org/en/api/std_msgs/html/msg/Boo
 Также whitelisting/blacklisting могут быть включены и выключены во время работы сервера. Для этого надо отрпавить True/False в соответствующий [топик](#топик).
 При включении одного фильтра, другой автоматически выключается. Выключение фильтров не удаляет список фильтраций.
 
+## Форматирование текста
+### Использование меток
+При работе с SoL в тексте можно вставлять специальные метки. 
+При их достижении в ходе прочтения сообщения в feedback топик посылается сообщение с указанием имени достигнутной метки (поле feedback.mark).
+Метка - набор символов, заключённый между '<' и '>':
+``` 
+# текст без метки:
+Привет! 
+
+# текст c меткой:
+Привет<hi>! 
+```
+Для использования режима меток в отправляемом в SoL сообщении необходимо установить поле use_ssml = True
+Этот функционал доступен только в режиме action-интерфейса.
 
 ## Назначение приоритетов
 

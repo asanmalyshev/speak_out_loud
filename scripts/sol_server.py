@@ -6,6 +6,7 @@ import actionlib
 import sys
 import speechd
 import signal
+import re
 
 from speak_out_loud.msg import SpeakGoal, SpeakAction, SpeakFeedback, SpeakResult, Priority
 from speak_out_loud.srv import SpeakFilter, SpeakFilterResponse
@@ -43,6 +44,9 @@ class SOLServer(object) :
         # signal.signal(signal.SIGINT, self.shutdown)
         # signal.signal(signal.SIGTERM, self.shutdown)
         # signal.signal(signal.SIGKILL, self.shutdown)
+        # self.feedback_msg = SpeakFeedback()
+        self.goal_status_mgs = actionlib.GoalStatus()
+        self.goal_status_mgs.status = actionlib.GoalStatus.ACTIVE
         rospy.on_shutdown(self.shutdown)
 
     def whitelist_control(self, req):
@@ -207,7 +211,7 @@ class SOLServer(object) :
         msg_id = -1
         result_msg = SpeakResult()
         feedback_msg = SpeakFeedback()
-        feedback_msg.msg = goal.text
+        # self.feedback_msg.msg = goal.text
         self._client.set_synthesis_voice(self.defaut_voice)
         self._client.set_priority(priority)
         if goal.voice=='':
@@ -216,6 +220,7 @@ class SOLServer(object) :
             self._client.set_synthesis_voice(goal.voice)
         def callback(callback_type, **kwargs):
             result_msg = SpeakResult()
+            feedback_msg.msg = goal.text
             if callback_type == speechd.CallbackType.BEGIN:
                 self.do_i_say_pub.publish(Bool(True))
             elif callback_type == speechd.CallbackType.END:
@@ -231,14 +236,15 @@ class SOLServer(object) :
             elif callback_type == speechd.CallbackType.INDEX_MARK:
                 feedback_msg.mark = kwargs['index_mark']
                 rospy.logwarn(kwargs['index_mark'])
+                self.server_sol.publish_feedback(self.goal_status_mgs, feedback_msg)
 
-        rospy.loginfo(goal.text)
+        rospy.loginfo(goal.use_ssml)
         self._client.set_data_mode(speechd.DataMode.TEXT)
         if goal.use_ssml:
             self._client.set_data_mode(speechd.DataMode.SSML)
+            goal.text = self.upd_text_for_ssml(goal.text)
+            rospy.loginfo(goal.text)
 
-        # goal.text = '<speak>Hello, <mark name=\"mark1\"/> how does it work?</speak>'
-        # rospy.loginfo(goal.text)
         spd_result = self._client.speak(goal.text, callback=callback,
                            event_types=(speechd.CallbackType.BEGIN,
                                         speechd.CallbackType.CANCEL,
@@ -246,6 +252,16 @@ class SOLServer(object) :
                                         speechd.CallbackType.INDEX_MARK))
         msg_id = int(spd_result[2][0])
         return msg_id
+
+    def upd_text_for_ssml(self, text):
+        marks = re.findall('\<.*?\>',text)
+        if len(marks) > 0:
+            for m in marks:
+                mark_name = m.replace("<","")
+                mark_name = mark_name.replace(">","")
+                text = text.replace(m,'<mark name="'+mark_name+'"/>')
+            text = "<speak>" + text +"</speak>" 
+        return text
 
     def spd_say(self, priority, msg):
         msg_id = -1
