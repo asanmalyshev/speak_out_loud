@@ -1,0 +1,9 @@
+<launch>
+    <arg name="output" default="screen"/>
+    <arg name="node_name" default="sol_client_action_iface"/>
+    <arg name="debug" default="False"/>
+
+    <node name="$(arg node_name)" pkg="speak_out_loud" type="sol_simple_client_action_iface.py" output="$(arg output)">
+      <param name="debug" value="$(arg debug)"/>
+    </node>
+</launch>

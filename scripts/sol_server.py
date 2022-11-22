@@ -25,6 +25,7 @@ class SOLServer(object) :
         self._client.set_output_module('rhvoice')
         self._client.set_synthesis_voice(self.defaut_voice)
         self.default_priority = Priority.TEXT
+        self._goal_sol_id_mapper = {}
 
         self.whitelist_on = False
         self.blacklist_on = False
@@ -162,10 +163,11 @@ class SOLServer(object) :
                 else:
                     rospy.loginfo("Node %s is in blacklist. Text won't be read out loud", goal.sender_node)
 
+        self._goal_sol_id_mapper[req.get_goal_id().id] = result_msg.msg_id
 
     def speak_action_srv_task_cancelation_cb(self, req):
-        # self._client.cancel(speechd.Scope.ALL)
-        self._client.stop()
+        self._client.cancel()
+        # self._client.stop()
 
     def fix_priority(self, priority):
         if not Priority.MIN < priority < Priority.MAX:
@@ -212,12 +214,14 @@ class SOLServer(object) :
         result_msg = SpeakResult()
         feedback_msg = SpeakFeedback()
         # self.feedback_msg.msg = goal.text
+        # result_msg = SpeakResult()
         self._client.set_synthesis_voice(self.defaut_voice)
         self._client.set_priority(priority)
         if goal.voice=='':
             self._client.set_synthesis_voice(self.defaut_voice)
         else:
             self._client.set_synthesis_voice(goal.voice)
+
         def callback(callback_type, **kwargs):
             result_msg = SpeakResult()
             feedback_msg.msg = goal.text
