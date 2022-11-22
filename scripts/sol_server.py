@@ -235,15 +235,12 @@ class SOLServer(object) :
                 req.set_canceled(result_msg)
             elif callback_type == speechd.CallbackType.INDEX_MARK:
                 feedback_msg.mark = kwargs['index_mark']
-                rospy.logwarn(kwargs['index_mark'])
                 self.server_sol.publish_feedback(self.goal_status_mgs, feedback_msg)
 
-        rospy.loginfo(goal.use_ssml)
         self._client.set_data_mode(speechd.DataMode.TEXT)
         if goal.use_ssml:
             self._client.set_data_mode(speechd.DataMode.SSML)
             goal.text = self.upd_text_for_ssml(goal.text)
-            rospy.loginfo(goal.text)
 
         spd_result = self._client.speak(goal.text, callback=callback,
                            event_types=(speechd.CallbackType.BEGIN,
