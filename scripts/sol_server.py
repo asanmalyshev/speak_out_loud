@@ -26,6 +26,7 @@ class SOLServer(object) :
         self._client.set_synthesis_voice(self.defaut_voice)
         self.default_priority = Priority.TEXT
         self._goal_sol_id_mapper = {}
+        self._do_i_say = False
 
         self.whitelist_on = False
         self.blacklist_on = False
@@ -39,6 +40,9 @@ class SOLServer(object) :
         else:
             rospy.Subscriber("texts", SpeakGoal, self.speak_task_cb)
 
+        if self.do_i_say_continuous:
+            rospy.Timer(rospy.Duration(1), self.do_i_say_pub_cb)
+
         rospy.Service('whitelist_control', SpeakFilter, self.whitelist_control)
         rospy.Service('blacklist_control', SpeakFilter, self.blacklist_control)
         rospy.loginfo('SOL server is started')
@@ -48,7 +52,11 @@ class SOLServer(object) :
         # self.feedback_msg = SpeakFeedback()
         self.goal_status_mgs = actionlib.GoalStatus()
         self.goal_status_mgs.status = actionlib.GoalStatus.ACTIVE
+
         rospy.on_shutdown(self.shutdown)
+
+    def do_i_say_pub_cb(self, event):
+        self.do_i_say_pub.publish(self._do_i_say)
 
     def whitelist_control(self, req):
         response = SpeakFilterResponse()
@@ -117,6 +125,7 @@ class SOLServer(object) :
         self.use_action_interface = rospy.get_param("~use_action_interface", True)
         self.whitelist = rospy.get_param("~whitelist", [])
         self.blacklist = rospy.get_param("~blacklist", [])
+        self.do_i_say_continuous = rospy.get_param("~do_i_say_continuous", False)
         
         if self.debug_mode:
             rospy.logwarn('DEBUG mode is ON')
@@ -227,14 +236,17 @@ class SOLServer(object) :
             feedback_msg.msg = goal.text
             if callback_type == speechd.CallbackType.BEGIN:
                 self.do_i_say_pub.publish(Bool(True))
+                self._do_i_say = True
             elif callback_type == speechd.CallbackType.END:
                 # feedback_msg.mark = ''
                 result_msg.msg_id = int(msg_id)
                 req.set_succeeded(result_msg)
                 self.do_i_say_pub.publish(Bool(False))
+                self._do_i_say = False
             elif callback_type == speechd.CallbackType.CANCEL:
                 # feedback_msg.mark = ''
                 self.do_i_say_pub.publish(Bool(False))
+                self._do_i_say = False
                 result_msg.msg_id = int(msg_id)
                 req.set_canceled(result_msg)
             elif callback_type == speechd.CallbackType.INDEX_MARK:
@@ -261,7 +273,7 @@ class SOLServer(object) :
                 mark_name = m.replace("<","")
                 mark_name = mark_name.replace(">","")
                 text = text.replace(m,'<mark name="'+mark_name+'"/>')
-            text = "<speak>" + text +"</speak>" 
+        text = "<speak>" + text +"</speak>" 
         return text
 
     def spd_say(self, priority, msg):

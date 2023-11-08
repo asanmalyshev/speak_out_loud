@@ -15,6 +15,7 @@
     <arg name="blacklist" default="[]"/>
     <!-- <arg name="whitelist" default="[/speak_out_loud_client]"/> -->
     <!-- <arg name="blacklist" default="[/speak_out_loud_client]"/> -->
+    <arg name="do_i_say_continuous" default="False"/>
 
     <node name="sol_server" pkg="speak_out_loud" type="sol_server.py" output="$(arg output)" ns="sol">
       <param name="debug" value="$(arg debug)"/>
@@ -22,6 +23,7 @@
       <rosparam param="blacklist" subst_value="True">$(arg blacklist)</rosparam>
       <param name="default_voice" value="$(arg default_voice)"/>
       <param name="use_action_interface" value="$(arg use_action_interface)"/>
+      <param name="do_i_say_continuous" value="$(arg do_i_say_continuous)"/>
     </node>
 
 </launch>
