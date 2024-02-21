@@ -173,19 +173,36 @@ string  sender_node   # sender node name
 string  text          # text to read
 string  voice          # voice to speak with
 uint8    priority     # priority of text
+bool    debug         # debug message
+bool    use_ssml      # use ssml markup
 ---
 # result
-uint8 success         # result of reading text (not used in current version) 
+uint8 smsg_id         # result of reading text (not used in current version) 
+uint8 IMPORTANT     = 1
+uint8 MESSAGE       = 2
+uint8 TEXT          = 3
+uint8 NOTIFICATION  = 4
+uint8 PROGRESS      = 5
 ---
 # feedback
-string message        # feedback of operation (not used in current version)
+int32 msg_id          # id of queued message
+uint8 msg_status      # status of queued message
+string msg            # msg to say
+string mark           # mark name
+uint8 SPD_BEGIN       = 1
+uint8 SPD_END         = 2
+uint8 SPD_INDEX_MARKS = 3
+uint8 SPD_CANCEL      = 4
+uint8 SPD_PAUSE       = 5
+uint8 SPD_RESUME      = 6
 ```
 Goal section is filled in user node which sends data.
+- ___sender_node___ contains node names data came from. This value is filled manually. It shouldn't be empty if you use whitelist/blacklist. By default it is empty. 
 - ___text___ contains text to be spoken __*)__;
 - ___voice___ voice to speak with. If not set, the default voice is used;
 - ___priority___ is a number [1,5]. For convenience these values are associated with constants in [msg/Priority.msg](msg/Priority.msg). Prioritization rules are explaned in [Messages priorities](#messages-priorities) section. Default value: Priority.TEXT;
-- ___sender_node___ contains node names data came from. This value is filled manually.
-It shouldn't be empty if you use whitelist/blacklist. By default it is empty. 
+- ___debug___ - сообщение, побликуемое в режиме debug;
+- ___use_ssml___ - использовать разметку ssml;
 > ___*)___ - values are required
 
 ## Messages priorities
@@ -311,6 +328,19 @@ It automatically turns filtering with that list on.
 Also whitelisting/blacklisting might be turned on/off with sending True/False value in corresponding [topic](#Topics).
 When turning on one list, another is automatically disabled. Turning lists off do not delete their content.
 
+## Text formatting
+### Mark usage
+Warning: feature works only in action-interface regime.
+SoL supports special marks, embedding in text. When SoL achieves a mark during text reading, name of achieved mark ist sent in action topic /feedback (field feedback.mark)
+mark is a set of symbols between '<' and '>':
+``` 
+# text without mark:
+Hello world! 
+
+# text with mark:
+Hello <hi> world!
+```
+To use marks, in sent message from client to SoL set use_ssml = True
 
 ## Priorities assignment
 
