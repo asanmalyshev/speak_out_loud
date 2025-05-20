@@ -144,7 +144,6 @@ class SOLServer(object) :
         goal = req.get_goal()
 
         priority = self.fix_priority(goal.priority)
-
         if goal.debug: # process debug messages
             if self.debug_mode:
                 msg_id = self.srv_spd_say(priority, req, goal)
@@ -218,12 +217,29 @@ class SOLServer(object) :
                 else:
                     rospy.loginfo("Node %s is in blacklist. Text won't be read out loud", msg.sender_node)
 
+    def voice_param_convert(self, val):
+        val = int(val*50)
+        if val > 100:
+            val = 100
+        elif val < -100:
+            val = -100
+        return val
+
     def srv_spd_say(self, priority, req, goal):
         msg_id = -1
         result_msg = SpeakResult()
         feedback_msg = SpeakFeedback()
         # self.feedback_msg.msg = goal.text
         # result_msg = SpeakResult()
+
+        speech_rate = self.voice_param_convert(goal.speech_rate)
+        pitch = self.voice_param_convert(goal.pitch)
+        pitch_rate = self.voice_param_convert(goal.pitch_rate)
+
+        self._client.set_pitch(pitch)
+        self._client.set_pitch_range(pitch_rate)
+        self._client.set_rate(speech_rate)
+
         self._client.set_synthesis_voice(self.defaut_voice)
         self._client.set_priority(priority)
         if goal.voice=='':

@@ -126,7 +126,7 @@ There're two ways to test the package:
 
 ### Bash way
 ```shell
-rostopic pub /sol/texts speak_out_loud/SpeakGoal "{sender_node: '', text: 'Привет', voice: '', priority: 1, debug: false}"
+rostopic pub /sol/texts speak_out_loud/SpeakGoal "{sender_node: '', text: 'привет', voice: '', priority: 0, speech_rate: 0.0, pitch: 0.0, pitch_rate: 0.0, debug: false, use_ssml: false}" -1
 ```
 
 ### Example node way
@@ -171,7 +171,10 @@ Clients communicate with server over [action/Speak.action](action/Speak.action).
 # goal
 string  sender_node   # sender node name 
 string  text          # text to read
-string  voice          # voice to speak with
+string  voice         # voice to speak with
+uint8   priority      # priority of text
+float32 speech_rate   # speech rate: value [-2;2], 0 - basic value
+float32 pitch         # voice pitch : value [-2;2], 0 - basic value
 uint8    priority     # priority of text
 bool    debug         # debug message
 bool    use_ssml      # use ssml markup

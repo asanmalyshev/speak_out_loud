@@ -1,5 +1,10 @@
 # CHANGELOG FILE
 
+## In development
+
+### Added
+  - RHvoice parameters for action interface and launches: speech rate, pitch and pitch rate
+
 ## v2.0.0 (2022.01.25)
 ___One node, whole pythonic version.___
 ___Old functionality restored___

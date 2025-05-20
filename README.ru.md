@@ -162,11 +162,14 @@ string  sender_node   # sender node name
 string  text          # text to read
 string  voice         # voice to speak with
 uint8   priority      # priority of text
+float32 speech_rate   # speech rate: value [-2;2], 0 - basic value
+float32 pitch         # voice pitch : value [-2;2], 0 - basic value
+uint8   priority      # priority of text
 bool    debug         # debug message
 bool    use_ssml      # use ssml markup
 ---
 # result
-uint8 smsg_id         # result of reading text (not used in current version) 
+uint8 msg_id         # result of reading text (not used in current version) 
 uint8 IMPORTANT     = 1
 uint8 MESSAGE       = 2
 uint8 TEXT          = 3
